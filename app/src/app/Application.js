@@ -583,13 +583,15 @@ export class Application {
             // ignore if server already started
             return this;
         }
-        if (!is_string(key) || !is_string(cert)) {
+        if (!is_string(key) || !is_string(cert) || key.trim() === '' || cert.trim() === '') {
             this._sslCert = null;
             this._sslKey = null;
             return this;
         }
         let existKey = /^\s*-+BEGIN.+PRIVATE.+KEY.+-+/.test(key);
         let existCert = /^\s*-+BEGIN.+CERTIFICATE.+-+/.test(cert);
+        let isKeyFile = !existKey;
+        let isCertFile = !existCert;
         existKey = existKey || fs.existsSync(key);
         existCert = existCert || fs.existsSync(cert);
         if (!existKey || !existCert) {
@@ -597,8 +599,8 @@ export class Application {
             this._sslKey = null;
             return this;
         }
-        cert = fs.readFileSync(cert);
-        key = fs.readFileSync(key);
+        cert = isCertFile ? fs.readFileSync(cert) : cert;
+        key = isKeyFile ? fs.readFileSync(key) : key;
         try {
             // check if cert valid ssl cert
             tls.createSecureContext({key, cert});
@@ -712,7 +714,31 @@ export class Application {
         if (!is_function(middleware.dispatch)) {
             return this;
         }
+        if (this._middlewares.find((m) => m.id === middleware.id)) {
+            return this;
+        }
         this._middlewares.push(middleware);
+        return this;
+    }
+
+    /**
+     * Remove middleware from the app
+     *
+     * @param {number|AbstractMiddleware} middlewareOrId
+     * @return {Application}
+     */
+    removeMiddleware(middlewareOrId) {
+        if (this.running) {
+            // ignore if server already started
+            return this;
+        }
+        if ((middlewareOrId instanceof AbstractMiddleware)) {
+           middlewareOrId = middlewareOrId.id;
+        }
+        if (!is_integer(middlewareOrId)) {
+            return this;
+        }
+        this._middlewares = this._middlewares.filter((m) => m.id !== middlewareOrId);
         return this;
     }
 
