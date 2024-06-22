@@ -1,0 +1,22 @@
+{
+  "plugins": [
+    "@babel/plugin-transform-runtime",
+    [
+      "@babel/plugin-transform-react-jsx",
+      {
+        "runtime": "automatic"
+      }
+    ]
+  ],
+  "presets": [
+    "@babel/preset-modules",
+    "@babel/preset-react",
+    [
+      "@babel/preset-typescript",
+      {
+        "isTSX": true,
+        "allExtensions": true
+      }
+    ]
+  ]
+}

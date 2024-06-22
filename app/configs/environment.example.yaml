@@ -1,0 +1,31 @@
+# ------------------------------------------- #
+# ENVIRONMENT CONFIGURATION                   #
+# config/environment.yaml                     #
+# ------------------------------------------- #
+
+# mode - test, development, production
+mode: development
+# timezone - UTC, Asia/Tokyo, etc
+timezone: UTC
+# language - en, ja, etc
+language: en
+# timeout response in milliseconds
+timeout: 5000
+# server port
+port: 3030
+# server public accessible or not
+public: true
+# x-powered-by header, false or empty to disable, string as custom value
+x_powered_by: false
+# pretty json response
+pretty_json: true
+# ssl configuration
+ssl:
+  enable: true # enable ssl (true or false)
+  key: '' # path to ssl key
+  cert: '' # path to ssl cert
+# directory path
+directory:
+  storage: '%root_dir%/storage'
+  public: '%root_dir%/public'
+  migrations: '%app_dir%/migration'

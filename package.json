@@ -1,0 +1,42 @@
+{
+  "name": "express-o-serve",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "watch": "ENV=test node watch.js",
+    "production": "ENV=production node app.js"
+  },
+  "main": "app.js",
+  "dependencies": {
+    "@babel/core": "^7.24.7",
+    "@babel/node": "^7.24.7",
+    "@babel/plugin-transform-react-jsx": "^7.24.7",
+    "@babel/plugin-transform-runtime": "^7.24.7",
+    "@babel/plugin-transform-typescript": "^7.24.7",
+    "@babel/preset-modules": "^0.1.6",
+    "@babel/preset-react": "^7.24.7",
+    "@babel/preset-typescript": "^7.24.7",
+    "@babel/register": "^7.24.6",
+    "chalk": "^5.3.0",
+    "express": "^4.19.2",
+    "gettext-parser": "^8.0.0",
+    "glob": "^10.4.2",
+    "html-react-parser": "^5.1.10",
+    "ioredis": "^5.4.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sequelize": "^6.37.3",
+    "winston": "^3.13.0",
+    "winston-daily-rotate-file": "^5.0.0",
+    "winston-rotating-file": "^0.2.0",
+    "yaml": "^2.4.5"
+  },
+  "devDependencies": {
+    "@types/babel__core": "^7.20.5",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.8",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@types/sequelize": "^4.28.20"
+  }
+}

@@ -1,0 +1,46 @@
+# ------------------------------------------- #
+# LOG CONFIGURATION                           #
+# config/log.yaml                             #
+# ------------------------------------------- #
+
+# debug log configuration
+debug:
+  enabled: true
+  type: rotating-file
+  path: '%storage_dir%/logs/debug.log'
+  count: 3
+  period: 1
+  max_size: 10
+# warn log configuration
+warn:
+  enabled: true
+  type: rotating-file
+  path: '%storage_dir%/logs/warn.log'
+  count: 3
+  period: 30
+  max_size: 10
+# trace log configuration
+trace:
+  enabled: true
+  type: rotating-file
+  path: '%storage_dir%/logs/trace.log'
+  count: 3
+  period: 30
+  max_size: 10
+# error log configuration
+error:
+  enable: true
+  type: rotating-file
+  path: '%storage_dir%/logs/error.log'
+  count: 3
+  period: 30
+  max_size: 10
+# info log configuration
+info:
+  enable: true
+  level: info
+  type: console
+# access log configuration
+access:
+  enable: true
+  type: console

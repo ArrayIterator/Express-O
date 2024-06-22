@@ -1,0 +1,31 @@
+# ------------------------------------------- #
+# CACHE CONFIGURATION                         #
+# config/cache.yaml                           #
+# ------------------------------------------- #
+
+# cache default configuration
+adapter: file
+# cache namespace
+namespace: 'my_app'
+# enable cache
+enable: true
+# cache stores
+stores:
+  file:
+    driver: file
+# cache drivers
+adapters:
+  file:
+    directory: '%storage_dir%/cache'
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    database: 0
+    username: null
+    password: null
+    timeout: 0.0
+    read_timeout: 0.0
+  memcached:
+    port: 11211
+    host: localhost
+    timeout: 0.0
