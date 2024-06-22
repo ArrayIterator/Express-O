@@ -599,8 +599,8 @@ export class Application {
             this._sslKey = null;
             return this;
         }
-        cert = isCertFile ? fs.readFileSync(cert) : cert;
-        key = isKeyFile ? fs.readFileSync(key) : key;
+        cert = isCertFile ? fs.readFileSync(cert, 'utf8') : cert;
+        key = isKeyFile ? fs.readFileSync(key, 'utf8') : key;
         try {
             // check if cert valid ssl cert
             tls.createSecureContext({key, cert});
