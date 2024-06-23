@@ -12,19 +12,12 @@ let id = 0;
  * @property {((err: Error, req: Request, res: Response, next: (err: any) => any) => (Promise<?>|any))|((req: Request, res: Response, next: (err: any) => any) => (Promise<?>|any))} dispatch
  * @abstract
  */
-export default class AbstractMiddleware {
-    /**
-     * Middleware id
-     *
-     * @type {number}
-     */
-    _id;
-
+export default class Middleware {
     /**
      * @constructor
      */
     constructor() {
-        if (this.constructor === AbstractMiddleware) {
+        if (this.constructor === Middleware) {
             throw new RuntimeException(
                 sprintf(
                     __('Can not create an instance of %s class'),
@@ -32,12 +25,12 @@ export default class AbstractMiddleware {
                 )
             );
         }
-        if (this.middlewareId !== AbstractMiddleware.prototype.middlewareId) {
+        if (this.middlewareId !== Middleware.prototype.middlewareId) {
             throw new RuntimeException(
-               sprintf(
-                   __('Can not override the middleware id of %s class'),
-                 this.constructor.name
-               )
+                sprintf(
+                    __('Can not override the middleware id of %s class'),
+                    this.constructor.name
+                )
             );
         }
         if (!is_numeric(this._priority)) {
@@ -49,6 +42,13 @@ export default class AbstractMiddleware {
         this._id = ++id;
         Object.defineProperty(this, '_id', {enumerable: false, writable: false});
     }
+
+    /**
+     * Middleware id
+     *
+     * @type {number}
+     */
+    _id;
 
     /**
      * Get the middleware id.
@@ -73,8 +73,8 @@ export default class AbstractMiddleware {
      *
      * @return {number}
      */
-    getPriority() {
-        return this._priority;
+    get priority() {
+        return this.getPriority();
     }
 
     /**
@@ -82,7 +82,7 @@ export default class AbstractMiddleware {
      *
      * @return {number}
      */
-    get priority() {
-        return this.getPriority();
+    getPriority() {
+        return this._priority;
     }
 }

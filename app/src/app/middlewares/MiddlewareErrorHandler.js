@@ -7,10 +7,9 @@ import {debug, error} from "../Logger.js";
 import {__} from "../../l10n/Translator.js";
 import {is_function} from "../../helpers/Is.js";
 import app from "../Application.js";
-import AbstractMiddleware from "../AbstractMiddleware.js";
-import {Error} from "sequelize";
+import Middleware from "../../abstracts/Middleware.js";
 
-class MiddlewareErrorHandler extends AbstractMiddleware {
+class MiddlewareErrorHandler extends Middleware {
 
     /**
      * @type {number}

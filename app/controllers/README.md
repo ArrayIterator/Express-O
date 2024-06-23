@@ -1,4 +1,4 @@
-# ROUTES DIRECTORY
+# ROUTES / CONTROLLERS DIRECTORY
 
 This directory contains all the routes for the application.
 

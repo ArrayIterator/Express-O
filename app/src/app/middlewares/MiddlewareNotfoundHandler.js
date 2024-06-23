@@ -1,9 +1,9 @@
 import NotFoundHandler from "../../errors/handler/NotFoundHandler.js";
 import {is_function, is_promise} from "../../helpers/Is.js";
 import application from "../Application.js";
-import AbstractMiddleware from "../AbstractMiddleware.js";
+import Middleware from "../../abstracts/Middleware.js";
 
-class MiddlewareNotfoundHandler extends AbstractMiddleware {
+class MiddlewareNotfoundHandler extends Middleware {
     _priority = Number.MAX_SAFE_INTEGER - 100;
 
     /**

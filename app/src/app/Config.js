@@ -10,7 +10,8 @@ import {
     is_async_function,
     is_boolean,
     is_function,
-    is_integer, is_numeric_integer,
+    is_integer,
+    is_numeric_integer,
     is_object,
     is_scalar,
     is_string
@@ -39,16 +40,21 @@ const resolvePath = (source, _path = '') => {
     }
     return path.resolve(source, _path);
 }
+export const PRODUCTION_NAME_ENV = 'production';
+export const DEVELOPMENT_NAME_ENV = 'development';
+export const TEST_NAME_ENV = 'test';
 
 export const SRC_DIR = resolvePath(import.meta.dirname, '../');
 export const APP_DIR = resolvePath(SRC_DIR, '../');
 export const ROOT_DIR = resolvePath(APP_DIR, '../');
-export const CONFIG_DIR = resolvePath(APP_DIR, 'configs');
-export const LANGUAGE_DIR = resolvePath(APP_DIR, 'languages');
-export const ROUTES_DIR = resolvePath(APP_DIR, 'routes');
+export const CONFIGS_DIR = resolvePath(APP_DIR, 'configs');
+export const LANGUAGES_DIR = resolvePath(APP_DIR, 'languages');
+export const CONTROLLERS_DIR = resolvePath(APP_DIR, 'controllers');
 export const MIDDLEWARES_DIR = resolvePath(APP_DIR, 'middlewares');
 export const VIEWS_DIR = resolvePath(APP_DIR, 'views');
 export const SRC_VIEWS_DIR = resolvePath(SRC_DIR, 'views');
+export const MODELS_DIR = resolvePath(APP_DIR, 'models');
+// export const SEEDERS_DIR = resolvePath(APP_DIR, 'seeders');
 
 /**
  * Directories
@@ -67,13 +73,45 @@ export const SRC_VIEWS_DIR = resolvePath(SRC_DIR, 'views');
  * }}
  */
 const DIRS = {
+    // alias of src_dir
     src: SRC_DIR,
+    source: SRC_DIR,
+
+    // alias of app_dir
     app: APP_DIR,
+    application: APP_DIR,
+
+    // alias of root_dir
     root: ROOT_DIR,
-    config: CONFIG_DIR,
-    language: LANGUAGE_DIR,
-    routes: ROUTES_DIR,
+    main: ROOT_DIR,
+
+    // alias of config_dir
+    config: CONFIGS_DIR,
+    configs: CONFIGS_DIR,
+    configuration: CONFIGS_DIR,
+
+    // alias of language_dir
+    language: LANGUAGES_DIR,
+    lang: LANGUAGES_DIR,
+    languages: LANGUAGES_DIR,
+
+    // alias of views_dir
     views: VIEWS_DIR,
+    view: VIEWS_DIR,
+
+    // alias of models_dir
+    models: MODELS_DIR,
+    model: MODELS_DIR,
+
+    // alias of seeders_dir
+    // seeders: SEEDERS_DIR,
+    // seeder: SEEDERS_DIR,
+
+    // aliases of controller_dir
+    routes: CONTROLLERS_DIR,
+    route: CONTROLLERS_DIR,
+    controllers: CONTROLLERS_DIR,
+    controller: CONTROLLERS_DIR,
 };
 
 /**
@@ -106,7 +144,7 @@ const replacePlaceHolder = (str) => {
 
 const CONFIGS = {
     environment: {
-        mode: 'production',
+        mode: PRODUCTION_NAME_ENV,
         timezone: 'UTC',
         timeout: 30000,
         public: false,
@@ -125,12 +163,35 @@ const CONFIGS = {
         }
     },
     cache: {},
-    database: {},
+    database: {
+        production: {
+            driver: null,
+            user: null,
+            password: null,
+            host: 'localhost',
+            port: null,
+            dbname: null,
+            charset: null,
+            collation: null,
+            prefix: null
+        },
+        development: {
+            driver: null,
+            user: null,
+            password: null,
+            host: 'localhost',
+            port: null,
+            dbname: null,
+            charset: null,
+            collation: null,
+            prefix: null
+        },
+    },
     log: {}
 };
 
 // build environment
-if (existsSync(resolvePath(CONFIG_DIR, 'environment.yaml'))) {
+if (existsSync(resolvePath(CONFIGS_DIR, 'environment.yaml'))) {
     try {
         /**
          * Environment
@@ -154,11 +215,11 @@ if (existsSync(resolvePath(CONFIG_DIR, 'environment.yaml'))) {
          *     }
          * }}
          */
-        let env = replacePlaceHolder(readFileSync(resolvePath(CONFIG_DIR, 'environment.yaml')));
+        let env = replacePlaceHolder(readFileSync(resolvePath(CONFIGS_DIR, 'environment.yaml')));
         env = parse(env);
         if (is_object(env)) {
             ['mode', 'timezone', 'language'].forEach(key => {
-                CONFIGS.environment[key] = is_string(env[key]) ? env[key] : CONFIG_DIR[key];
+                CONFIGS.environment[key] = is_string(env[key]) ? env[key] : CONFIGS_DIR[key];
                 delete env[key];
             });
             CONFIGS.environment.remove_x_powered_by = is_boolean(env.remove_x_powered_by) ? env.remove_x_powered_by : CONFIGS.environment.remove_x_powered_by;
@@ -205,9 +266,9 @@ if (existsSync(resolvePath(CONFIG_DIR, 'environment.yaml'))) {
 }
 
 if (NODE_ENV !== '') {
-    CONFIGS.environment.mode = NODE_ENV.startsWith('prod') ? 'production' : (
-        NODE_ENV.startsWith('dev') ? 'development' : (
-            NODE_ENV.startsWith('test') ? 'test' : CONFIGS.environment.mode
+    CONFIGS.environment.mode = NODE_ENV.startsWith('prod') ? PRODUCTION_NAME_ENV : (
+        NODE_ENV.startsWith('dev') ? DEVELOPMENT_NAME_ENV : (
+            NODE_ENV.startsWith('test') ? TEST_NAME_ENV : CONFIGS.environment.mode
         )
     );
 }
@@ -221,30 +282,44 @@ if (NODE_LANGUAGE !== '' && NODE_LANGUAGE.length === 2) {
     CONFIGS.environment.language = NODE_LANGUAGE.toLowerCase();
 }
 if (!CONFIGS.environment.mode) {
-    CONFIGS.environment.mode = 'production';
+    CONFIGS.environment.mode = PRODUCTION_NAME_ENV;
 } else {
     let env_ = CONFIGS.environment.mode.trim().toLowerCase();
-    CONFIGS.environment.mode = env_.startsWith('prod') ? 'production' : (
-        env_.startsWith('dev') ? 'development' : (
-            env_.startsWith('test') ? 'test' : CONFIGS.environment.mode
+    CONFIGS.environment.mode = env_.startsWith('prod') ? PRODUCTION_NAME_ENV : (
+        env_.startsWith('dev') ? DEVELOPMENT_NAME_ENV : (
+            env_.startsWith('test') ? TEST_NAME_ENV : CONFIGS.environment.mode
         )
     );
 }
+
 DIRS.storage = CONFIGS.environment.directory.storage;
 DIRS.public = CONFIGS.environment.directory.public;
 DIRS.migrations = CONFIGS.environment.directory.migrations;
 
 export const STORAGE_DIR = DIRS.storage;
 export const PUBLIC_DIR = DIRS.public;
-export const MIGRATION_DIR = DIRS.migrations;
+export const MIGRATIONS_DIR = DIRS.migrations;
 
+/**
+ * Directories checked notes
+ *
+ * @type {{[key:string]: true}|null}
+ */
+let checked = {};
 for (let key in DIRS) {
+    // prevent multiple checks
+    if (checked[DIRS[key]]) {
+        continue;
+    }
+    checked[DIRS[key]] = true;
     if (!existsSync(DIRS[key])) {
         mkdirSync(DIRS[key], {recursive: true});
     }
 }
+// freed
+checked = null;
 
-glob.sync(resolvePath(CONFIG_DIR, '*.yaml')).forEach(file => {
+glob.sync(resolvePath(CONFIGS_DIR, '*.yaml')).forEach(file => {
     let name = path.basename(file, '.yaml');
     // exclude environment and example files
     if (name === 'environment' || name.endsWith('.example')) {
@@ -313,7 +388,7 @@ export class Configuration {
      * @return {boolean}
      */
     get is_development() {
-        return this.environment_mode === 'development';
+        return this.environment_mode === DEVELOPMENT_NAME_ENV;
     }
 
     /**
@@ -322,7 +397,7 @@ export class Configuration {
      * @return {boolean}
      */
     get is_test() {
-        return this.environment_mode === 'test';
+        return this.environment_mode === TEST_NAME_ENV;
     }
 
     /**

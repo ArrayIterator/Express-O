@@ -4,7 +4,7 @@ import {is_integer, is_string} from "../../helpers/Is.js";
 import ResponseTimeoutException from "../../errors/exceptions/ResponseTimeoutException.js";
 import MiddlewareErrorHandler from "./MiddlewareErrorHandler.js";
 import MiddlewareGlobalErrorHandler from "./MiddlewareGlobalErrorHandler.js";
-import AbstractMiddleware from "../AbstractMiddleware.js";
+import Middleware from "../../abstracts/Middleware.js";
 
 let registered = false;
 let lastResponse = null;
@@ -16,7 +16,7 @@ const ClearTimeout = () => {
     }
 }
 
-class MiddlewareHandler extends AbstractMiddleware {
+class MiddlewareHandler extends Middleware {
     _priority = Number.MIN_SAFE_INTEGER + 100;
 
     /**

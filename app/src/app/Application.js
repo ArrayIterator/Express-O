@@ -27,15 +27,15 @@ import MiddlewareHandler from "./middlewares/MiddlewareHandler.js";
 import MiddlewareNotfoundHandler from "./middlewares/MiddlewareNotfoundHandler.js";
 import {debug, error, warn} from "./Logger.js";
 import ReactEngine, {RegisterReactEngine} from "../engine/react/ReactEngine.js";
-import Config, {MIDDLEWARES_DIR, ROUTES_DIR, SRC_VIEWS_DIR, VIEWS_DIR} from "./Config.js";
+import Config, {MIDDLEWARES_DIR, CONTROLLERS_DIR, SRC_VIEWS_DIR, VIEWS_DIR} from "./Config.js";
 import MiddlewareErrorHandler from "./middlewares/MiddlewareErrorHandler.js";
 import MiddlewareGlobalErrorHandler from "./middlewares/MiddlewareGlobalErrorHandler.js";
 import {__} from "../l10n/Translator.js";
-import AbstractRoute from "../router/AbstractRoute.js";
+import Controller from "../abstracts/Controller.js";
 import Route from "../router/Route.js";
 import path from "node:path";
 import Json from "./Json.js";
-import AbstractMiddleware from "./AbstractMiddleware.js";
+import Middleware from "../abstracts/Middleware.js";
 
 const {request: Request, response: Response} = express;
 
@@ -73,7 +73,7 @@ const CollectFiles = (directory, maxDepth = 10) => {
 }
 
 /**
- * Scan route directory to router
+ * Scan route directory to router (controller)
  *
  * @param {Router} router
  * @param maxDepth
@@ -81,18 +81,18 @@ const CollectFiles = (directory, maxDepth = 10) => {
  */
 export const ScanRouteDirectoryToRouter = (router, maxDepth = 10) => {
     return new Promise(async (resolve) => {
-        if (!existsSync(ROUTES_DIR) || !statSync(ROUTES_DIR).isDirectory()) {
+        if (!existsSync(CONTROLLERS_DIR) || !statSync(CONTROLLERS_DIR).isDirectory()) {
             resolve();
             return;
         }
         try {
-            accessSync(ROUTES_DIR, fs.constants.R_OK);
+            accessSync(CONTROLLERS_DIR, fs.constants.R_OK);
         } catch (err) {
             resolve();
             return;
         }
-        let routes =  [];
-        let files = CollectFiles(ROUTES_DIR, maxDepth);
+        let routes = [];
+        let files = CollectFiles(CONTROLLERS_DIR, maxDepth);
         while (files.length) {
             let file = files.shift();
             try {
@@ -100,15 +100,15 @@ export const ScanRouteDirectoryToRouter = (router, maxDepth = 10) => {
                 if (!route) {
                     continue;
                 }
-                const instance = route instanceof AbstractRoute;
-                if (instance || is_function(route) && route.prototype && route.prototype instanceof AbstractRoute) {
+                const instance = route instanceof Controller;
+                if (instance || is_function(route) && route.prototype && route.prototype instanceof Controller) {
                     if (!instance) {
                         route = new route();
                     }
-                    if (!(route instanceof AbstractRoute)) {
+                    if (!(route instanceof Controller)) {
                         continue;
                     }
-                    let _route = Route.CreateFromAbstractRoute(route);
+                    let _route = Route.CreateFromController(route);
                     router.addRoute(_route);
                     try {
                         Object.defineProperty(route, '__filename', {
@@ -170,10 +170,10 @@ export const ScanMiddlewareDirectory = (app, maxDepth = 10) => {
                 if (!middleware) {
                     continue;
                 }
-                if (is_function(middleware) && middleware.prototype && middleware.prototype instanceof AbstractMiddleware) {
+                if (is_function(middleware) && middleware.prototype && middleware.prototype instanceof Middleware) {
                     middleware = new middleware();
                 }
-                if (!(middleware instanceof AbstractMiddleware)) {
+                if (!(middleware instanceof Middleware)) {
                     continue;
                 }
                 if (!is_function(middleware.dispatch)) {
@@ -402,7 +402,7 @@ export class Application {
     /**
      * Middlewares
      *
-     * @type {[AbstractMiddleware]}
+     * @type {[Middleware]}
      * @private
      */
     _middlewares = [];
@@ -410,7 +410,7 @@ export class Application {
     /**
      * Get Middlewares
      *
-     * @return {[AbstractMiddleware]}
+     * @return {[Middleware]}
      */
     get middlewares() {
         return this._middlewares;
@@ -511,12 +511,12 @@ export class Application {
     _is_ssl = false;
 
     /**
-     * Enable SSL
+     * Check if use ssl
      *
-     * @param boolean
+     * @return {boolean}
      */
-    enableSSL(boolean) {
-        this.is_ssl = !!boolean;
+    get is_ssl() {
+        return this._is_ssl && !!this.sslKey && !!this.sslCert;
     }
 
     /**
@@ -529,21 +529,21 @@ export class Application {
     }
 
     /**
-     * Check if use ssl
-     *
-     * @return {boolean}
-     */
-    get is_ssl() {
-        return this._is_ssl && !!this.sslKey && !!this.sslCert;
-    }
-
-    /**
      * Check if server running
      *
      * @return {boolean}
      */
     get running() {
         return !!this._server;
+    }
+
+    /**
+     * Enable SSL
+     *
+     * @param boolean
+     */
+    enableSSL(boolean) {
+        this.is_ssl = !!boolean;
     }
 
     /**
@@ -635,7 +635,7 @@ export class Application {
     /**
      * Ser error handler
      *
-     * @param {ErrorHandler|AbstractMiddleware} handler
+     * @param {ErrorHandler|Middleware} handler
      * @return {this}
      */
     setErrorHandler(handler) {
@@ -643,7 +643,7 @@ export class Application {
             // ignore if server already started
             return this;
         }
-        if (handler instanceof AbstractMiddleware) {
+        if (handler instanceof Middleware) {
             handler = handler.dispatch;
             if (!is_function(handler)) {
                 return this;
@@ -664,7 +664,7 @@ export class Application {
     /**
      * Ser not found handler
      *
-     * @param {RouteHandler|AbstractMiddleware} handler
+     * @param {RouteHandler|Middleware} handler
      * @return {this}
      */
     setNotFoundHandler(handler) {
@@ -672,7 +672,7 @@ export class Application {
             // ignore if server already started
             return this;
         }
-        if (handler instanceof AbstractMiddleware) {
+        if (handler instanceof Middleware) {
             handler = handler.dispatch;
             if (!is_function(handler)) {
                 return this;
@@ -693,7 +693,7 @@ export class Application {
     /**
      * Add middleware to the app
      *
-     * @param {AbstractMiddleware} middleware
+     * @param {Middleware} middleware
      * @return {this}
      */
     addMiddleware(middleware) {
@@ -702,13 +702,13 @@ export class Application {
             return this;
         }
         // check if function of middleware
-        if (is_function(middleware) && middleware.prototype && middleware.prototype instanceof AbstractMiddleware) {
+        if (is_function(middleware) && middleware.prototype && middleware.prototype instanceof Middleware) {
             if (!is_function(middleware.prototype.dispatch)) {
                 return this;
             }
             middleware = new middleware();
         }
-        if (!(middleware instanceof AbstractMiddleware)) {
+        if (!(middleware instanceof Middleware)) {
             return this;
         }
         if (!is_function(middleware.dispatch)) {
@@ -724,7 +724,7 @@ export class Application {
     /**
      * Remove middleware from the app
      *
-     * @param {number|AbstractMiddleware} middlewareOrId
+     * @param {number|Middleware} middlewareOrId
      * @return {Application}
      */
     removeMiddleware(middlewareOrId) {
@@ -732,8 +732,8 @@ export class Application {
             // ignore if server already started
             return this;
         }
-        if ((middlewareOrId instanceof AbstractMiddleware)) {
-           middlewareOrId = middlewareOrId.id;
+        if ((middlewareOrId instanceof Middleware)) {
+            middlewareOrId = middlewareOrId.id;
         }
         if (!is_integer(middlewareOrId)) {
             return this;
@@ -745,7 +745,7 @@ export class Application {
     /**
      * Add middleware to the app
      *
-     * @param {InstanceType<AbstractMiddleware>} middleware
+     * @param {InstanceType<Middleware>} middleware
      * @return {this}
      */
     use(middleware) {
@@ -979,7 +979,7 @@ export class Application {
                         return aPriority > bPriority ? 1 : -1;
                     });
                     this.middlewares.forEach((middleware) => {
-                        if (!(middleware instanceof AbstractMiddleware) || !is_function(middleware.dispatch)) {
+                        if (!(middleware instanceof Middleware) || !is_function(middleware.dispatch)) {
                             return;
                         }
                         app.use(middleware.dispatch.bind(middleware));

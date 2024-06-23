@@ -1,18 +1,29 @@
-import AbstractRoute from "../src/router/AbstractRoute.js";
+// noinspection JSUnusedGlobalSymbols
+
+import Controller from "../src/abstracts/Controller.js";
 import {ALL} from "../src/router/Methods.js";
 import {md5} from "../src/helpers/Hash.js";
 import {strval} from "../src/helpers/DataType.js";
 
 const modifiedSince = new Date();
 modifiedSince.setMilliseconds(0);
-export default class FaviconRoute extends AbstractRoute {
 
+export default class Favicon extends Controller {
+
+    /**
+     * @inheritDoc
+     */
     name = 'favicon';
 
+    /**
+     * @inheritDoc
+     */
     path = /^\/*favicon\.ico$/;
 
+    /**
+     * @inheritDoc
+     */
     methods = [ALL];
-
 
     /**
      * @inheritDoc
@@ -22,9 +33,19 @@ export default class FaviconRoute extends AbstractRoute {
         const favicon = 'AAABAAEAEBAAAAAAAABoBQAAFgAAACgAAAAQAAAAIAAAAAEACAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAD///8A';
         const etag = md5(favicon + modifiedSince.toUTCString());
         // check about modified so, it wil return 304
-        const modified = strval(_request.get('If-Modified-Since'));
+        const modified_since_request = strval(_request.get('If-Modified-Since'));
+        const etag_request = strval(_request.get('If-None-Match'));
         try {
-            if (modified && new Date(modified).getTime() >= modifiedSince.getTime()) {
+            if (etag_request && etag_request === etag) {
+                _response.statusCode = 304;
+                return '';
+            }
+            // check browser if it has request cached
+            // etag is the same and modified since is less than the current request modified since
+            if ((!etag_request || etag_request === etag)
+                && modified_since_request
+                && new Date(modified_since_request).getTime() === modifiedSince.getTime()
+            ) {
                 _response.statusCode = 304;
                 return '';
             }

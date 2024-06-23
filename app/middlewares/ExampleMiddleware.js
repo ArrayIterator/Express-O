@@ -1,8 +1,8 @@
 // noinspection JSUnusedGlobalSymbols
 
-import AbstractMiddleware from "../src/app/AbstractMiddleware.js";
+import Middleware from "../src/abstracts/Middleware.js";
 
-export default class ExampleMiddleware extends AbstractMiddleware {
+export default class ExampleMiddleware extends Middleware {
     /**
      * @inheritDoc
      */

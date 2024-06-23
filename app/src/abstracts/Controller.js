@@ -5,18 +5,20 @@ import {sprintf} from "../helpers/Formatting.js";
 import {__} from "../l10n/Translator.js";
 import RuntimeException from "../errors/exceptions/RuntimeException.js";
 import {
+    is_array, is_empty,
     is_function,
     is_integer,
     is_numeric,
     is_numeric_integer,
     is_object,
-    is_promise, is_renderable_object, is_renderable_string,
+    is_promise, is_regexp, is_renderable_object, is_renderable_string,
     is_string
 } from "../helpers/Is.js";
 import Json from "../app/Json.js";
 import HTTP_MESSAGES from "../helpers/HttpCode.js";
 import {filter_content_type, intval} from "../helpers/DataType.js";
 import ResponseTimeoutException from "../errors/exceptions/ResponseTimeoutException.js";
+import {ALL} from "../router/Methods.js";
 
 const {request: Request, response: Response} = express;
 
@@ -33,7 +35,7 @@ const {request: Request, response: Response} = express;
  * @property {number} __route_id - Route id
  * @abstract
  */
-export default class AbstractRoute {
+export default class Controller {
 
     /**
      * Response
@@ -79,20 +81,47 @@ export default class AbstractRoute {
     #contentType = null;
 
     /**
+     * Route / Controller name
+     *
+     * @type {string}
+     * @abstract
+     * @protected
+     */
+    name;
+
+    /**
+     * Methods
+     *
+     * @type {string[]}
+     * @abstract
+     * @protected
+     */
+    methods = [];
+
+    /**
+     * Route Path
+     *
+     * @type {string|RegExp}
+     * @abstract
+     * @protected
+     */
+    path;
+
+    /**
      * Constructor
      * @final
      */
     constructor() {
-        if (this.constructor === AbstractRoute) {
+        if (this.constructor === Controller) {
             throw new ReferenceError(
                 sprintf(
                     __('Cannot construct %s instances directly'),
-                    AbstractRoute.name
+                    Controller.name
                 )
             );
         }
-        // check if dispatch owned by AbstractRoute
-        if (this.dispatchRoute !== AbstractRoute.prototype.dispatchRoute) {
+        // check if dispatch owned by Controller
+        if (this.dispatchRoute !== Controller.prototype.dispatchRoute) {
             throw new ReferenceError(
                 sprintf(
                     __('Can not override %s method'),
@@ -103,8 +132,17 @@ export default class AbstractRoute {
 
         this.methods = this.methods || [];
         this.methods = is_string(this.methods) ? [this.methods] : this.methods;
+        // filter methods
+        this.methods = this.methods.filter((method) => {
+            return is_string(method);
+        })
+        // make unique
+        this.methods = [...new Set(this.methods)];
+        if (is_empty(this.methods)) {
+            this.methods = [ALL];
+        }
         this.path = this.path || null;
-        this.name = this.name || this.constructor.name;
+        this.name = !this.name || !is_string(this.name) ? this.constructor.name : this.name;
         this.name = !is_string(this.name) ? null : this.name;
         this.priority = this.priority || 0;
         this.priority = !is_numeric(this.priority) ? 0 : parseInt(this.priority);
@@ -189,6 +227,71 @@ export default class AbstractRoute {
     }
 
     /**
+     * Get route path
+     *
+     * @return {string|RegExp|null}
+     */
+    getPath() {
+        if (!is_string(this.path) && !is_regexp(this.path)) {
+            this.path = null;
+            return null;
+        }
+        return this.path;
+    }
+
+    /**
+     * Get route name
+     *
+     * @return {string}
+     */
+    getName() {
+        if (!is_string(this.name)) {
+            this.name = this.constructor.name;
+        }
+        return this.name;
+    }
+
+    /**
+     * Get route priority
+     *
+     * @return {number}
+     */
+    getPriority() {
+        if (!is_numeric(this.priority)) {
+            this.priority = 0;
+        }
+        return this.priority;
+    }
+
+    /**
+     * Get route methods
+     *
+     * @return {string[]}
+     */
+    getMethods() {
+        if (!is_array(this.methods)) {
+            if (is_object(this.methods)) {
+                let methods = [];
+                for (let key in this.methods) {
+                    if (!this.methods.hasOwnProperty(key)) {
+                        continue;
+                    }
+                    if (!is_string(this.methods[key])) {
+                        continue;
+                    }
+                    methods.push(this.methods[key]);
+                }
+                methods = is_empty(methods) ? [ALL] : methods;
+                // make unique
+                this.methods = [...new Set(methods)];
+            } else {
+                this.methods = [ALL];
+            }
+        }
+        return this.methods;
+    }
+
+    /**
      * Set json
      *
      * @param {Json} json
@@ -248,7 +351,7 @@ export default class AbstractRoute {
      *
      * @param {Request} request
      * @param {Response} response
-     * @param {() => void} next
+     * @param {(arg: any) => void} next
      * @return {Promise<any>}
      * @final
      */

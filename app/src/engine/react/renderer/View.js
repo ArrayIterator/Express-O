@@ -44,7 +44,7 @@ class View {
             }
         }
         root = root || options.root;
-        this.path =  this.path || this.resolve(this.root, name);
+        this.path = this.path || this.resolve(this.root, name);
         if (this.defaultEngine) {
             let extensionDefault = this.defaultEngine[0] !== '.' ? '.' + this.defaultEngine : this.defaultEngine;
             this.engine = extensionDefault ? options.engines[extensionDefault] : null;

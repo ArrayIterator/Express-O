@@ -1,9 +1,9 @@
 import Config, {ROOT_DIR} from "../Config.js";
 import {error} from "../Logger.js";
 import {__} from "../../l10n/Translator.js";
-import AbstractMiddleware from "../AbstractMiddleware.js";
+import Middleware from "../../abstracts/Middleware.js";
 
-class MiddlewareGlobalErrorHandler extends AbstractMiddleware {
+class MiddlewareGlobalErrorHandler extends Middleware {
 
     /**
      * Dispatch the error.

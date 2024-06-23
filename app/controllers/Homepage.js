@@ -1,8 +1,8 @@
-import AbstractRoute from "../src/router/AbstractRoute.js";
+import Controller from "../src/abstracts/Controller.js";
 import {ALL} from "../src/router/Methods.js";
 import {__} from "../src/l10n/Translator.js";
 
-export default class Homepage extends AbstractRoute {
+export default class Homepage extends Controller {
     name = 'homepage';
 
     path = '/';

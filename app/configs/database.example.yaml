@@ -3,21 +3,41 @@
 # config/database.yaml                        #
 # ------------------------------------------- #
 
-# database driver
-driver: 'mysql'
-# database user
-user: 'username'
-# database password
-password: 'password]'
-# database host
-host: 'localhost'
-# database port
-port: 3306
-# database name
-dbname: 'dbname'
-# database charset
-charset: 'utf8mb4'
-# database collation
-collation: 'utf8mb4_unicode_ci'
-# database prefix
-prefix: ''
+production:
+  # database driver
+  driver: 'mysql'
+  # database user
+  username: 'username'
+  # database password
+  password: 'password'
+  # database host
+  host: 'localhost'
+  # database port
+  port: 3306
+  # database name
+  database: 'dbname'
+  # database charset
+  charset: 'utf8mb4'
+  # database collation
+  collation: 'utf8mb4_unicode_ci'
+  # database prefix
+  prefix: ''
+development:
+  # database driver
+  driver: 'mysql'
+  # database user
+  username: 'username'
+  # database password
+  password: 'password'
+  # database host
+  host: 'localhost'
+  # database port
+  port: 3306
+  # database name
+  database: 'db_name_development'
+  # database charset
+  charset: 'utf8mb4'
+  # database collation
+  collation: 'utf8mb4_unicode_ci'
+  # database prefix
+  prefix: ''

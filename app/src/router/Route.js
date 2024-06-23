@@ -17,7 +17,7 @@ import RouteException from "../errors/exceptions/RouteException.js";
 import Exception from "../errors/exceptions/Exception.js";
 import {E_ERROR} from "../errors/exceptions/ErrorCode.js";
 import {__} from "../l10n/Translator.js";
-import AbstractRoute from "./AbstractRoute.js";
+import Controller from "../abstracts/Controller.js";
 import RuntimeException from "../errors/exceptions/RuntimeException.js";
 import {floatval, intval} from "../helpers/DataType.js";
 
@@ -229,46 +229,47 @@ export default class Route {
     /**
      * Create route from abstract route
      *
-     * @param {AbstractRoute|Function<AbstractRoute>} route
+     * @param {Controller|Function<Controller>} controller
      * @return {Route}
      * @constructor
      */
-    static CreateFromAbstractRoute(route) {
-        if (typeof route === "function" && route.prototype instanceof AbstractRoute) {
-            route = new route();
+    static CreateFromController(controller) {
+        if (typeof controller === "function" && controller.prototype instanceof Controller) {
+            controller = new controller();
         }
-        if (!(route instanceof AbstractRoute)) {
+        if (!(controller instanceof Controller)) {
             throw new InvalidArgumentException(
                 sprintf(
-                    __('Route must be an instance of AbstractRoute, %s given.'),
-                    route === null ? route : typeof route
+                    __('Route must be an instance of %s, %s given.'),
+                    Controller.name,
+                    controller === null ? controller : typeof controller
                 )
             );
         }
-        if (!is_string(route.path) && !is_regexp(route.path)) {
+        if (!is_string(controller.path) && !is_regexp(controller.path)) {
             throw new RuntimeException(
                 sprintf(
                     __('Route path must be as a string, the existing type is : %s.'),
-                    route.path === null ? route.path : typeof route.path
+                    controller.path === null ? controller.path : typeof controller.path
                 )
             );
         }
-        let name = route.name;
-        let priority = route.priority;
+        let name = controller.getName();
+        let priority = controller.getPriority();
         if (!is_string(name)) {
-            name = route.constructor.name;
+            name = controller.constructor.name;
         }
         if (!is_numeric(priority)) {
             priority = 0;
         }
 
         /**
-         * @type {AbstractRoute} route
+         * @type {Controller} route
          */
         return new Route({
-            path: route.path,
-            methods: route.methods,
-            handler: route.dispatchRoute.bind(route),
+            path: controller.path,
+            methods: controller.methods,
+            handler: controller.dispatchRoute.bind(controller), // use dispatchRoute instead of dispatch
             name,
             priority
         });

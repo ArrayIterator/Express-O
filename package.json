@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "watch": "ENV=test node watch.js",
-    "production": "ENV=production node app.js"
+    "production": "ENV=production node app.js",
+    "compile": "tsc"
   },
   "main": "app.js",
   "dependencies": {
@@ -23,9 +24,14 @@
     "glob": "^10.4.2",
     "html-react-parser": "^5.1.10",
     "ioredis": "^5.4.1",
+    "knex": "^3.1.0",
+    "mysql2": "^3.10.1",
+    "objection": "^3.1.4",
+    "pg": "^8.12.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "sequelize": "^6.37.3",
+    "sqlite3": "^5.1.7",
+    "typeorm": "^0.3.20",
     "winston": "^3.13.0",
     "winston-daily-rotate-file": "^5.0.0",
     "winston-rotating-file": "^0.2.0",
@@ -37,6 +43,7 @@
     "@types/node": "^20.14.8",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-    "@types/sequelize": "^4.28.20"
+    "yargs": "^17.7.2",
+    "typescript": "^5.5.2"
   }
 }

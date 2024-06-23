@@ -1,7 +1,7 @@
 // noinspection JSUnusedGlobalSymbols
 
 import Translations, {DEFAULT_DOMAIN} from "./Translations.js";
-import Config, {LANGUAGE_DIR} from "../app/Config.js";
+import Config, {LANGUAGES_DIR} from "../app/Config.js";
 import {is_string} from "../helpers/Is.js";
 import {NormalizeLocale} from "./Filter.js";
 import {existsSync, readdirSync, statSync} from "node:fs";
@@ -110,7 +110,7 @@ export const load_domain_translation = (domain, directory) => {
     }
     try {
         // list file language dir, json, mo, po
-        for (const file of readdirSync(LANGUAGE_DIR)) {
+        for (const file of readdirSync(LANGUAGES_DIR)) {
             const ext = extname(file).toLowerCase();
             const locale = NormalizeLocale(basename(file, ext));
             if (!locale || locale.length < 2) {
@@ -233,7 +233,7 @@ export const add_translation_file = (language, domain, file) => {
 }
 
 // load text domain
-load_domain_translation(DEFAULT_DOMAIN, LANGUAGE_DIR);
+load_domain_translation(DEFAULT_DOMAIN, LANGUAGES_DIR);
 if (DOMAIN_LISTS[translations.locale]) {
     set_language_translation(translations.locale);
 }

@@ -7,7 +7,7 @@ import {is_function, is_integer, is_numeric_integer, is_promise, is_string} from
 import {intval} from "../helpers/DataType.js";
 import {ALL, CONNECT, DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT, TRACE} from "./Methods.js";
 import {__} from "../l10n/Translator.js";
-import AbstractRoute from "./AbstractRoute.js";
+import Controller from "../abstracts/Controller.js";
 import {Application} from "../app/Application.js";
 
 /**
@@ -149,7 +149,7 @@ export default class Router {
                     continue;
                 }
                 express[method](route.path, (req, res, next) => {
-                    if (route instanceof AbstractRoute) {
+                    if (route instanceof Controller) {
                         route.setJson(app.getJsonObject());
                     }
                     let _r = route.dispatch.bind(route)(req, res, next);

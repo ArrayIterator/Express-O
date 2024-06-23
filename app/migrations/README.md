@@ -1,3 +1,3 @@
 # MIGRATIONS DIRECTORY
 
-This directory contains all the database migrations for the application using `sequelize`.
+This directory contains all the database migrations for the application using **[Objection.js](https://vincit.github.io/objection.js)**
