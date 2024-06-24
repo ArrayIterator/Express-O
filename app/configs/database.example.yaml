@@ -2,6 +2,10 @@
 # DATABASE CONFIGURATION                      #
 # config/database.yaml                        #
 # ------------------------------------------- #
+# The key only accept :
+#   production, development & test
+# The value is an array of database configuration
+# ------------------------------------------- #
 
 production:
   # database driver

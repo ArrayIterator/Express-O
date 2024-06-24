@@ -1,6 +1,5 @@
 // noinspection JSUnusedGlobalSymbols
 
-import express from "express";
 import {
     is_array,
     is_empty,
@@ -20,14 +19,13 @@ import {__} from "../l10n/Translator.js";
 import Controller from "../abstracts/Controller.js";
 import RuntimeException from "../errors/exceptions/RuntimeException.js";
 import {floatval, intval} from "../helpers/DataType.js";
-
-const {request: Request, response: Response} = express;
-
 let increment = 0;
 
 /**
- * @template {(req: Request, res: Response, next: NextHandler) => any} RouteHandler
- * @template {(err: any) => any} NextHandler
+ * @typedef {http.IncomingMessage&Express.Request} Request
+ * @typedef {http.OutgoingMessage&Express.Response} Response
+ * @typedef {(req: Request, res: Response, next: NextHandler) => any} RouteHandler
+ * @typedef {(err: any) => any} NextHandler
  */
 export default class Route {
 
@@ -377,8 +375,8 @@ export default class Route {
     /**
      * Dispatch route
      *
-     * @param {Express.Request} req
-     * @param {Express.Response} res
+     * @param {Request} req
+     * @param {Response} res
      * @param {NextHandler} next
      * @return {Promise<?>}
      */

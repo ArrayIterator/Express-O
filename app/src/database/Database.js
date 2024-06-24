@@ -1,7 +1,7 @@
 // noinspection JSUnusedGlobalSymbols
 
 import {Model as KnexModel} from "objection";
-import Config from "../app/Config.js";
+import Config, {ENVIRONMENT_MODE, ENVIRONMENT_MODES} from "../app/Config.js";
 import {is_object, is_string} from "../helpers/Is.js";
 import RuntimeException from "../errors/exceptions/RuntimeException.js";
 import {__} from "../l10n/Translator.js";
@@ -25,18 +25,31 @@ export class DatabaseWrapper {
     #connection;
 
     /**
+     * @type {string|"production"|"development"|"test"}
+     */
+    mode;
+    /**
      * Constructor
      */
-    constructor() {
-        Object.defineProperty(this, 'connect', {
-            value: this.connect.bind(this),
-            enumerable: false,
-            writable: false,
+    constructor(mode = null) {
+        mode = is_string(mode) ? mode.trim().toLowerCase() : ENVIRONMENT_MODE;
+        this.mode =  ENVIRONMENT_MODES.includes(mode) ? mode : ENVIRONMENT_MODE;
+        Object.defineProperties(this, {
+            mode: {
+                value: this.mode,
+                writable: false,
+                enumerable: false,
+            },
+            connect: {
+                value: this.connect.bind(this),
+                enumerable: false,
+                writable: false,
+            },
+            connection: {
+                get: () => this.connect().#connection,
+                enumerable: false,
+            }
         })
-        Object.defineProperty(this, 'connection', {
-            get: () => this.connect().#connection,
-            enumerable: false,
-        });
     }
 
     /**
@@ -94,7 +107,7 @@ export class DatabaseWrapper {
         }
 
         const configs = Config.getObject('database');
-        const environment = Config.environment_mode;
+        const environment = this.mode;
         let config;
         if (is_object(configs[environment])) {
             config = configs[environment];
@@ -128,6 +141,7 @@ export class DatabaseWrapper {
                 }
             }
         }
+        config.environment = this.mode;
         this.#connection = new Connection(config);
         KnexModel.knex(this.knex);
         return this;
@@ -176,7 +190,7 @@ export class DatabaseWrapper {
     }
 }
 
-const Database = new DatabaseWrapper();
+export const Database = new DatabaseWrapper(ENVIRONMENT_MODE);
 export const Model = Database.Model;
 export const Builder = () => Database.queryBuilder;
 export default Database;

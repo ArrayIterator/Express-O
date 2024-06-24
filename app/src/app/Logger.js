@@ -1,7 +1,7 @@
-import configuration, {STORAGE_DIR} from "./Config.js";
+import configuration, {LOG_DIR} from "./Config.js";
 import {is_boolean, is_integer, is_object, is_string} from "../helpers/Is.js";
 import {existsSync, mkdirSync} from "node:fs";
-import path from "node:path";
+import path, {resolve as resolvePath} from "node:path";
 import winston from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
 import chalk from "chalk";
@@ -23,21 +23,21 @@ const DEFAULT = {
     warn: {
         enable: true,
         type: 'rotating-file',
-        path: STORAGE_DIR + '/logs/warn.log',
+        path: resolvePath(LOG_DIR, 'warn.log'),
         count: 3,
         period: 30,
     },
     error: {
         enable: true,
         type: 'rotating-file',
-        path: STORAGE_DIR + '/logs/error.log',
+        path: resolvePath(LOG_DIR, 'error.log'),
         count: 3,
         period: 30,
     },
     access: {
         enable: false,
         type: 'rotating-file',
-        path: STORAGE_DIR + '/logs/access.log',
+        path: resolvePath(LOG_DIR, 'access.log'),
         count: 3,
         period: 30,
     }
@@ -114,7 +114,7 @@ for (let level of LEVELS) {
         config[level].type = DEFAULT[level].type;
     }
     if (!is_string(config[level].path)) {
-        config[level].path = DEFAULT[level].path || STORAGE_DIR + '/logs/' + level + '.log';
+        config[level].path = DEFAULT[level].path || resolvePath(LOG_DIR,  level + '.log');
     }
     if (!is_integer(config[level].count)) {
         config[level].count = DEFAULT[level].count || 3;

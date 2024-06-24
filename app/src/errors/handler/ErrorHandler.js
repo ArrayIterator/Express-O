@@ -3,20 +3,21 @@ import {E_ERROR} from "../exceptions/ErrorCode.js";
 import HttpException from "../exceptions/HttpException.js";
 import NotFoundHandler from "./NotFoundHandler.js";
 import Config from "../../app/Config.js";
-import express from "express";
 import {http_message} from "../../helpers/HttpCode.js";
 import {is_json_content_type} from "../../helpers/DataType.js";
 import {__} from "../../l10n/Translator.js";
 import Application from "../../app/Application.js";
 
-const {response, request} = express;
 
 /**
  * Error handler
  *
+ * @typedef {http.IncomingMessage&Express.Request} Request
+ * @typedef {http.OutgoingMessage&Express.Response} Response
+ *
  * @param {Error} err Error object
- * @param {request} request Request object
- * @param {response} response Response object
+ * @param {Request} request Request object
+ * @param {Response} response Response object
  * @param _next
  */
 export default function ErrorHandler(err, request, response, _next) {

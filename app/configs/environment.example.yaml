@@ -2,6 +2,9 @@
 # ENVIRONMENT CONFIGURATION                   #
 # config/environment.yaml                     #
 # ------------------------------------------- #
+# The mode only accept :
+#   test, development & production
+# ------------------------------------------- #
 
 # mode - test, development, production
 mode: development
@@ -28,4 +31,3 @@ ssl:
 directory:
   storage: '%root_dir%/storage'
   public: '%root_dir%/public'
-  migrations: '%app_dir%/migrations'

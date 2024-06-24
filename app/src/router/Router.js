@@ -11,8 +11,10 @@ import Controller from "../abstracts/Controller.js";
 import {Application} from "../app/Application.js";
 
 /**
- * @template {(req: Request, res: Response, next?: NextHandler) => any} RouteHandler
- * @template {(err: any) => any} NextHandler
+ * @typedef {http.IncomingMessage&Express.Request} Request
+ * @typedef {http.OutgoingMessage&Express.Response} Response
+ * @typedef {(req: Request, res: Response, next?: NextHandler) => any} RouteHandler
+ * @typedef {(err: any) => any} NextHandler
  */
 export default class Router {
 

@@ -27,17 +27,21 @@ import MiddlewareHandler from "./middlewares/MiddlewareHandler.js";
 import MiddlewareNotfoundHandler from "./middlewares/MiddlewareNotfoundHandler.js";
 import {debug, error, warn} from "./Logger.js";
 import ReactEngine, {RegisterReactEngine} from "../engine/react/ReactEngine.js";
-import Config, {MIDDLEWARES_DIR, CONTROLLERS_DIR, SRC_VIEWS_DIR, VIEWS_DIR} from "./Config.js";
+import Config, {
+    SRC_VIEWS_DIR,
+    ENVIRONMENT_MODE,
+    VIEWS_DIR,
+    CONTROLLERS_DIR,
+    MIDDLEWARES_DIR, ENVIRONMENT_MODES
+} from "./Config.js";
 import MiddlewareErrorHandler from "./middlewares/MiddlewareErrorHandler.js";
 import MiddlewareGlobalErrorHandler from "./middlewares/MiddlewareGlobalErrorHandler.js";
 import {__} from "../l10n/Translator.js";
 import Controller from "../abstracts/Controller.js";
 import Route from "../router/Route.js";
-import path from "node:path";
+import {resolve as resolvePath} from "node:path";
 import Json from "./Json.js";
 import Middleware from "../abstracts/Middleware.js";
-
-const {request: Request, response: Response} = express;
 
 // set strict routing
 express.Router({caseSensitive: true, strict: true});
@@ -58,7 +62,7 @@ const CollectFiles = (directory, maxDepth = 10) => {
             return;
         }
         fs.readdirSync(dir).forEach((file) => {
-            const _path = path.resolve(dir, file);
+            const _path = resolvePath(dir, file);
             const stats = statSync(_path);
             if (stats.isDirectory()) {
                 return readDir(_path, depth + 1);
@@ -75,24 +79,25 @@ const CollectFiles = (directory, maxDepth = 10) => {
 /**
  * Scan route directory to router (controller)
  *
- * @param {Router} router
+ * @param {Application} app
  * @param maxDepth
  * @return {Promise<number[]>}
  */
-export const ScanRouteDirectoryToRouter = (router, maxDepth = 10) => {
+export const ScanRouteDirectoryToRouter = (app, maxDepth = 10) => {
+    const directory = resolvePath(CONTROLLERS_DIR, app.mode);
     return new Promise(async (resolve) => {
-        if (!existsSync(CONTROLLERS_DIR) || !statSync(CONTROLLERS_DIR).isDirectory()) {
+        if (!existsSync(directory) || !statSync(directory).isDirectory()) {
             resolve();
             return;
         }
         try {
-            accessSync(CONTROLLERS_DIR, fs.constants.R_OK);
+            accessSync(directory, fs.constants.R_OK);
         } catch (err) {
             resolve();
             return;
         }
         let routes = [];
-        let files = CollectFiles(CONTROLLERS_DIR, maxDepth);
+        let files = CollectFiles(directory, maxDepth);
         while (files.length) {
             let file = files.shift();
             try {
@@ -109,7 +114,7 @@ export const ScanRouteDirectoryToRouter = (router, maxDepth = 10) => {
                         continue;
                     }
                     let _route = Route.CreateFromController(route);
-                    router.addRoute(_route);
+                    app.router.addRoute(_route);
                     try {
                         Object.defineProperty(route, '__filename', {
                             value: file,
@@ -144,19 +149,20 @@ export const ScanRouteDirectoryToRouter = (router, maxDepth = 10) => {
  * @return {Promise<number[]>}
  */
 export const ScanMiddlewareDirectory = (app, maxDepth = 10) => {
+    const directory = resolvePath(MIDDLEWARES_DIR, app.mode);
     return new Promise(async (resolve) => {
-        if (!existsSync(MIDDLEWARES_DIR) || !statSync(MIDDLEWARES_DIR).isDirectory()) {
+        if (!existsSync(directory) || !statSync(directory).isDirectory()) {
             resolve();
             return;
         }
         try {
-            accessSync(MIDDLEWARES_DIR, fs.constants.R_OK);
+            accessSync(directory, fs.constants.R_OK);
         } catch (err) {
             resolve();
             return;
         }
 
-        let files = CollectFiles(MIDDLEWARES_DIR, maxDepth);
+        let files = CollectFiles(directory, maxDepth);
         /**
          * Middlewares id
          *
@@ -192,6 +198,10 @@ export const ScanMiddlewareDirectory = (app, maxDepth = 10) => {
 }
 
 /**
+ * Application class
+ *
+ * @typedef {http.IncomingMessage&Express.Request} Request
+ * @typedef {http.OutgoingMessage&Express.Response} Response
  * @template {(err: any) => any} NextHandler
  * @template {(err: Error, req: Request, res: Response, next?: NextHandler) => any} ErrorHandler
  * @template {(req: Request, res: Response, next?: NextHandler) => any} RouteHandler
@@ -212,6 +222,13 @@ export class Application {
     #registeredMiddlewareScannedId = [];
 
     /**
+     * Mode
+     * @type {string}
+     * @readonly
+     */
+    mode;
+
+    /**
      * Server
      *
      * @type {Server}
@@ -222,11 +239,21 @@ export class Application {
     /**
      * App Constructor
      */
-    constructor() {
+    constructor(mode = null) {
+        mode = !is_string(mode) || ! ENVIRONMENT_MODES.includes(mode) ? ENVIRONMENT_MODE : mode;
+        Object.defineProperty(
+            this,
+            'mode',
+
+            {
+                value: mode,
+                writable: false,
+                enumerable: true,
+            });
         this._timeout = TIMEOUT;
         this.addMiddleware(MiddlewareHandler);
         this._reactEngine = new ReactEngine({
-            viewsDir: VIEWS_DIR,
+            viewsDir: resolvePath(VIEWS_DIR, mode),
             staticMarkup: false,
             extensions: ['.tsx', '.jsx'],
             docType: '<!DOCTYPE html>'
@@ -883,7 +910,7 @@ export class Application {
             app.set('case sensitive routing', true);
             RegisterReactEngine(app, {
                 viewsDir: [
-                    VIEWS_DIR,
+                    resolvePath(VIEWS_DIR, this.mode),
                     SRC_VIEWS_DIR
                 ]
             });
@@ -900,7 +927,7 @@ export class Application {
                         __('Starting server on %s://%s (%s)'),
                         this.is_ssl ? 'https' : 'http',
                         this.hostname,
-                        Config.environment_mode
+                        this.mode
                     )
                 );
             } else {
@@ -911,7 +938,7 @@ export class Application {
                         this.is_ssl ? 'https' : 'http',
                         this.hostname,
                         port,
-                        Config.environment_mode
+                        this.mode
                     )
                 );
             }
@@ -935,7 +962,7 @@ export class Application {
                                 __('Server started on %s://%s (%s)'),
                                 this.is_ssl ? 'https' : 'http',
                                 this.hostname,
-                                Config.environment_mode
+                                this.mode
                             )
                         );
                     } else {
@@ -946,7 +973,7 @@ export class Application {
                                 this.is_ssl ? 'https' : 'http',
                                 this.hostname,
                                 port,
-                                Config.environment_mode
+                                this.mode
                             )
                         );
                     }
@@ -954,7 +981,7 @@ export class Application {
                     if (is_array(this.#registeredRouteScannedId)) {
                         this.#registeredRouteScannedId.forEach((id) => this.router.deleteRoute(id));
                     }
-                    let routes = await ScanRouteDirectoryToRouter(this.router);
+                    let routes = await ScanRouteDirectoryToRouter(this);
                     let middlewares = await ScanMiddlewareDirectory(this);
                     this._server = server;
                     this._express = app;

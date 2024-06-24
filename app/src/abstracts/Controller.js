@@ -1,6 +1,5 @@
 // noinspection JSUnusedGlobalSymbols
 
-import express from "express";
 import {sprintf} from "../helpers/Formatting.js";
 import {__} from "../l10n/Translator.js";
 import RuntimeException from "../errors/exceptions/RuntimeException.js";
@@ -20,13 +19,13 @@ import {filter_content_type, intval} from "../helpers/DataType.js";
 import ResponseTimeoutException from "../errors/exceptions/ResponseTimeoutException.js";
 import {ALL} from "../router/Methods.js";
 
-const {request: Request, response: Response} = express;
-
 /**
  * Abstract route
  *
  * @see ScanRouteDirectoryToRouter
  *
+ * @typedef {http.IncomingMessage&Express.Request} Request
+ * @typedef {http.OutgoingMessage&Express.Response} Response
  * @property {string[]} methods - HTTP methods
  * @property {string|RegExp|null} path - Route path
  * @property {?string} name - Route name

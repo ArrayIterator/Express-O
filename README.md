@@ -2,7 +2,21 @@
  
 **Express-O SERVE** simple serving web application.
 
+## ENVIRONMENT MODE
+
+The application running 1 instance, and only accepted 1 environment mode variable `development`, `production`, or `test`.
+
 ## DIRECTORY STRUCTURE
+
+The applications folders that contains 3 environment mode directory `development`, `production`, and `test` are:
+
+- [middlewares](app/middlewares) the middlewares directory
+- [models](app/models) the models directory
+- [seeders](app/seeders) the seeders directory
+- [migrations](app/migrations) the migrations directory
+- [controllers](app/controllers) the controllers directory
+- [entities](app/entities) the entities directory
+- [views](app/views) the views directory
 
 ```txt
 app/
@@ -14,13 +28,54 @@ app/
 ├── languages/ (language directory)
 │   └── xx.(po|mo|json) (Language file)
 ├── middlewares/ (middlewares directory)
-│   └── xxxxx.js (Middlewares)
+│   ├── development/ (development middlewares directory)
+│   │    └── xxxxx.js (Middlewares)
+│   ├── production/ (production middlewares directory)
+│   │    └── xxxxx.js (Middlewares)
+│   └── test/ (test middlewares directory)
+│        └── xxxxx.js (Middlewares)
+├── entities/ (entities directory)
+│   ├── development/ (development entities directory)
+│   │    └── xxxxx.js (Entities)
+│   ├── production/ (production entities directory)
+│   │    └── xxxxx.js (Entities)
+│   └── test/ (test entities directory)
+│        └── xxxxx.js (Entities)
 ├── models/ (models directory)
-│   └── xxxxx.js (Models)
+│   ├── development/ (development models directory)
+│   │    └── xxxxx.js (Models)
+│   ├── production/ (production models directory)
+│   │    └── xxxxx.js (Models)
+│   └── test/ (test models directory)
+│        └── xxxxx.js (Models)
+├── seeders/ (seeders directory)
+│   ├── development/ (development seeders directory)
+│   │    └── xxxxx.js (Seeders)
+│   ├── production/ (production seeders directory)
+│   │    └── xxxxx.js (Seeders)
+│   └── test/ (test seeders directory)
+│        └── xxxxx.js (Seeders)
 ├── migrations/ (migrations directory)
-│   └── xxxxx.js (Migrations)
+│   ├── development/ (development migrations directory)
+│   │    └── xxxxx.js (Migrations)
+│   ├── production/ (production migrations directory)
+│   │    └── xxxxx.js (Migrations)
+│   └── test/ (test migrations directory)
+│        └── xxxxx.js (Migrations)
 ├── controllers/ (Controllers / Routes directory)
-│   └── xxxxx.js (Controller)
+│   ├── development/ (development controllers directory)
+│   │    └── xxxxx.js (Controllers)
+│   ├── production/ (production controllers directory)
+│   │    └── xxxxx.js (Controllers)
+│   └── test/ (test controllers directory)
+│        └── xxxxx.js (Controllers)
+├── views/ (Views directory)
+│   ├── development/ (development views directory)
+│   │    └── xxxxx.tsx (Views - React Typescript)
+│   ├── production/ (production views directory)
+│   │    └── xxxxx.tsx (Views - React Typescript)
+│   └── test/ (test views directory)
+│        └── xxxxx.tsx (Views - React Typescript)
 ├── src/ (source directory)
 │   ├── abstracts/ (abstracts source code directory)
 │   │   ├── Controller.js (Abstract Controller)
@@ -55,19 +110,19 @@ app/
 │   │   ├── Method.js (Method Collection)
 │   │   ├── Route.js (Route Class)
 │   │   └──  Router.js (Router Class)
-│   ├── views/ (server source code directory)
-│   │   └── (xxxxx|xxx/)*.tsx (Views - React Typescript)
+│   └── views/ (server source code directory)
+│       └── (xxxxx|xxx/)*.tsx (Views - React Typescript)
 ├── public/ (public directory)
 │   └── xxxx (any public files)
 ├── storage/ (storage directory)
 │   └── xxxx (any storage files)
-├── .gitingore (git ignore)
+├── .gitignore (git ignore)
 ├── app.js (app entry point)
 ├── babel.config.js (babel config)
 ├── LICENSE (license)
 ├── package.json (node package.json)
 ├── README.md (readme)
-├── watch.json (watcher daemon for development only)
+├── watch.json (watcher daemon for development / testing only - the environment mode is `test`)
 └── tsconfig.json (typescript config)
 
 ```

@@ -1,7 +1,6 @@
 import {
     is_array,
     is_boolean,
-    is_function,
     is_number,
     is_numeric,
     is_numeric_integer,
@@ -13,6 +12,15 @@ import {__} from "../l10n/Translator.js";
 import {sprintf} from "../helpers/Formatting.js";
 import {floatval, intval, strval} from "../helpers/DataType.js";
 import KnexFn from "knex";
+import {
+    ENVIRONMENT_MODE,
+    ENVIRONMENT_MODES,
+    MIGRATIONS_DIR,
+    PRODUCTION_NAME_ENV,
+    SEEDERS_DIR,
+    TEST_NAME_ENV
+} from "../app/Config.js";
+import {resolve as resolvePath} from "node:path";
 
 /**
  * @typedef {"cockroachdb"|"sqlite3"|"redshift"|"oracledb"|"postgres"|"mssql"|"mysql2"} DriverName
@@ -33,6 +41,7 @@ import KnexFn from "knex";
  *      timeout?: number,
  *      connect_timeout?:number,
  *      prefix: string,
+ *      environment: "production"|"development"|"test",
  *      [key: string]: any
  * }} DatabaseConfiguration
  * @typedef {any} TRecord
@@ -171,7 +180,7 @@ export const ParseDSN = (dsn) => {
         prefix: /(?:^|\s*;)\s*(?:db|database)?prefix\s*=\s*(['"]?)(?<value>[^\1;]*)\1\s*(;|$)/i,
     }
     const result = {
-        debug: false,
+        debug: ENVIRONMENT_MODE === TEST_NAME_ENV,
         nullable: true,
         driver: driver,
         user: null,
@@ -184,6 +193,7 @@ export const ParseDSN = (dsn) => {
         timezone: null,
         connect_timeout: null,
         timeout: null,
+        environment: ENVIRONMENT_MODE,
         prefix: ''
     };
     const skip_name = [
@@ -265,6 +275,8 @@ export const ParseDSN = (dsn) => {
     if (!is_string(result.prefix)) {
         result.prefix = '';
     }
+    result.environment = is_string(result.environment) ? result.environment.trim().toLowerCase() : ENVIRONMENT_MODE;
+    result.environment = ENVIRONMENT_MODES.includes(result.environment) ? result.environment : ENVIRONMENT_MODE;
     result.prefix = result.prefix.trim();
     return result;
 }
@@ -439,8 +451,17 @@ export const CreateKnexConnection = (config) => {
     }
     if (is_boolean(config.debug)) {
         connection.debug = config.debug;
+    } else {
+        connection.debug = ENVIRONMENT_MODE !== PRODUCTION_NAME_ENV;
     }
+
     const knex = KnexFn({
+        seeds: {
+            directory: resolvePath(SEEDERS_DIR, config.environment),
+        },
+        migrations: {
+            directory: resolvePath(MIGRATIONS_DIR, config.environment),
+        },
         debug: connection.debug,
         client: config.driver,
         dialect: config.dialect,

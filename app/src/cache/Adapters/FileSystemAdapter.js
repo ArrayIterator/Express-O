@@ -1,6 +1,6 @@
 import CacheItemPool from "../CacheItemPool.js";
 import {is_boolean, is_integer, is_object, is_scalar, is_string} from "../../helpers/Is.js";
-import {STORAGE_DIR} from "../../app/Config.js";
+import {CACHE_DIR} from "../../app/Config.js";
 import {dirname, resolve} from "node:path";
 import {md5} from "../../helpers/Hash.js";
 import {base64_encode} from "../../helpers/DataType.js";
@@ -88,7 +88,7 @@ export default class FileSystemAdapter extends CacheItemPool {
         namespace = namespace || '_';
         super(namespace, defaultExpiration);
         if (!is_string(directory)) {
-            directory = STORAGE_DIR + '/cache';
+            directory = CACHE_DIR;
         }
         if (!this.isValidNamespace(namespace)) {
             throw new CacheInvalidArgumentException(

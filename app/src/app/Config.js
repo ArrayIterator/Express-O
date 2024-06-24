@@ -44,7 +44,7 @@ const resolvePath = (source, _path = '') => {
 export const PRODUCTION_NAME_ENV = 'production';
 export const DEVELOPMENT_NAME_ENV = 'development';
 export const TEST_NAME_ENV = 'test';
-
+export const ENVIRONMENT_MODES = [PRODUCTION_NAME_ENV, DEVELOPMENT_NAME_ENV, TEST_NAME_ENV];
 export const SRC_DIR = resolvePath(import.meta.dirname, '../');
 export const APP_DIR = resolvePath(SRC_DIR, '../');
 export const ROOT_DIR = resolvePath(APP_DIR, '../');
@@ -57,7 +57,7 @@ export const SRC_VIEWS_DIR = resolvePath(SRC_DIR, 'views');
 export const MODELS_DIR = resolvePath(APP_DIR, 'models');
 export const MIGRATIONS_DIR = resolvePath(APP_DIR, 'migrations');
 export const ENTITIES_DIR = resolvePath(APP_DIR, 'entities');
-// export const SEEDERS_DIR = resolvePath(APP_DIR, 'seeders');
+export const SEEDERS_DIR = resolvePath(APP_DIR, 'seeders');
 
 /**
  * Directories
@@ -92,6 +92,9 @@ const DIRS = {
     configs: CONFIGS_DIR,
     configuration: CONFIGS_DIR,
 
+    // alias of middlewares
+    middlewares: MIDDLEWARES_DIR,
+
     // alias of language_dir
     language: LANGUAGES_DIR,
     lang: LANGUAGES_DIR,
@@ -99,27 +102,20 @@ const DIRS = {
 
     // alias of views_dir
     views: VIEWS_DIR,
-    view: VIEWS_DIR,
 
     // alias of models_dir
     models: MODELS_DIR,
-    model: MODELS_DIR,
     // alias of migrations_dir
     migrations: MIGRATIONS_DIR,
-    migration: MIGRATIONS_DIR,
     // alias of entities_dir
     entities: ENTITIES_DIR,
-    entity: ENTITIES_DIR,
 
     // alias of seeders_dir
-    // seeders: SEEDERS_DIR,
-    // seeder: SEEDERS_DIR,
+    seeders: SEEDERS_DIR,
 
     // aliases of controller_dir
     routes: CONTROLLERS_DIR,
-    route: CONTROLLERS_DIR,
     controllers: CONTROLLERS_DIR,
-    controller: CONTROLLERS_DIR,
 };
 
 /**
@@ -290,19 +286,49 @@ if (NODE_LANGUAGE !== '' && NODE_LANGUAGE.length === 2) {
 if (!CONFIGS.environment.mode) {
     CONFIGS.environment.mode = PRODUCTION_NAME_ENV;
 } else {
+    // only accept test/production/development
     let env_ = CONFIGS.environment.mode.trim().toLowerCase();
     CONFIGS.environment.mode = env_.startsWith('prod') ? PRODUCTION_NAME_ENV : (
         env_.startsWith('dev') ? DEVELOPMENT_NAME_ENV : (
-            env_.startsWith('test') ? TEST_NAME_ENV : CONFIGS.environment.mode
+            env_.startsWith('test') ? TEST_NAME_ENV : PRODUCTION_NAME_ENV
         )
     );
 }
-
 DIRS.storage = CONFIGS.environment.directory.storage;
 DIRS.public = CONFIGS.environment.directory.public;
 
 export const STORAGE_DIR = DIRS.storage;
 export const PUBLIC_DIR = DIRS.public;
+export const LOGS_DIR = resolvePath(STORAGE_DIR, 'logs');
+export const CACHES_DIR = resolvePath(STORAGE_DIR, 'caches');
+export const REACT_ENGINES_DIR = resolvePath(STORAGE_DIR, 'react-engines');
+
+// env
+export const ENVIRONMENT_MODE = CONFIGS.environment.mode;
+export const VIEW_DIR = resolvePath(VIEWS_DIR, ENVIRONMENT_MODE);
+export const MODEL_DIR = resolvePath(MODELS_DIR, ENVIRONMENT_MODE);
+export const MIGRATION_DIR = resolvePath(MIGRATIONS_DIR, ENVIRONMENT_MODE);
+export const ENTITY_DIR = resolvePath(ENTITIES_DIR, ENVIRONMENT_MODE);
+export const CONTROLLER_DIR = resolvePath(CONTROLLERS_DIR, ENVIRONMENT_MODE);
+export const SEEDER_DIR = resolvePath(SEEDERS_DIR, ENVIRONMENT_MODE);
+export const MIDDLEWARE_DIR = resolvePath(MIDDLEWARES_DIR, ENVIRONMENT_MODE);
+export const LOG_DIR = resolvePath(LOGS_DIR, ENVIRONMENT_MODE);
+export const CACHE_DIR = resolvePath(CACHES_DIR, ENVIRONMENT_MODE);
+export const REACT_ENGINE_DIR = resolvePath(REACT_ENGINES_DIR, ENVIRONMENT_MODE);
+
+// Placeholders
+DIRS['view'] = VIEW_DIR;
+DIRS['model'] = MODEL_DIR;
+DIRS['migration'] = MIGRATION_DIR;
+DIRS['entity'] = ENTITY_DIR;
+DIRS['controller'] = CONTROLLER_DIR;
+DIRS['route'] = CONTROLLER_DIR;
+DIRS['seeder'] = SEEDER_DIR;
+DIRS['middleware'] = MIDDLEWARE_DIR;
+DIRS['logs'] = LOGS_DIR;
+DIRS['log'] = LOG_DIR;
+DIRS['caches'] = CACHES_DIR;
+DIRS['cache'] = CACHE_DIR;
 
 /**
  * Directories checked notes
@@ -419,7 +445,7 @@ export class Configuration {
      * @return {string}
      */
     get environment_mode() {
-        return Config.get('environment.mode');
+        return ENVIRONMENT_MODE;
     }
 
     /**

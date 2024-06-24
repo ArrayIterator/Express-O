@@ -1,14 +1,13 @@
-import {is_json_content_type, strval} from "../../helpers/DataType.js";
-import express from "express";
+import {is_json_content_type} from "../../helpers/DataType.js";
 import {http_message} from "../../helpers/HttpCode.js";
 import {__} from "../../l10n/Translator.js";
 import Application from "../../app/Application.js";
 
-const {response, request} = express;
-
 /**
- * @param {request} request
- * @param {response} response
+ * @typedef {http.IncomingMessage&Express.Request} Request
+ * @typedef {http.OutgoingMessage&Express.Response} Response
+ * @param {Request} request
+ * @param {Response} response
  * @constructor
  */
 export default function NotFoundHandler(request, response) {

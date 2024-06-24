@@ -1,7 +1,7 @@
 // noinspection JSUnusedGlobalSymbols
 
 import {is_date, is_numeric, is_numeric_integer, is_object, is_string} from "../helpers/Is.js";
-import Config, {STORAGE_DIR} from "../app/Config.js";
+import Config, {CACHE_DIR} from "../app/Config.js";
 import {accessSync, constants, existsSync, mkdirSync} from "node:fs";
 import {floatval, intval} from "../helpers/DataType.js";
 import CacheInvalidArgumentException from "./Exceptions/CacheInvalidArgumentException.js";
@@ -41,7 +41,7 @@ const CreateCachePoolItem = () => {
         return new VoidAdapter();
     }
     const defaultLifetime = is_numeric(cache.defaultLifetime) ? intval(cache.defaultLifetime) : 0;
-    const defaultCacheDir = STORAGE_DIR + '/cache';
+    const defaultCacheDir = CACHE_DIR;
     let adapter = is_object(cache) && is_string(cache.adapter) ? cache.adapter.trim().toLowerCase() : null;
     const adapters = is_object(cache) && is_object(cache.adapters) ? cache.adapters : null;
     let namespace = cache.namespace;

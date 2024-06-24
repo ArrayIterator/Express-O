@@ -8,7 +8,7 @@ import {strval} from "../../src/helpers/DataType.js";
 const modifiedSince = new Date();
 modifiedSince.setMilliseconds(0);
 
-export default class FaviconTestMode extends Controller {
+export default class FaviconDevelopmentMode extends Controller {
 
     /**
      * @inheritDoc

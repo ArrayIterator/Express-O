@@ -1,4 +1,3 @@
-import express from "express";
 import {
     is_array,
     is_boolean,
@@ -16,8 +15,10 @@ import {sprintf} from "../helpers/Formatting.js";
 import InvalidArgumentException from "../errors/exceptions/InvalidArgumentException.js";
 import {__} from "../l10n/Translator.js";
 
-const {response: Response} = express;
-
+/**
+ * @typedef {http.IncomingMessage&Express.Request} Request
+ * @typedef {http.OutgoingMessage&Express.Response} Response
+ */
 export default class Json {
     /**
      * Charset

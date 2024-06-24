@@ -16,6 +16,10 @@ const ClearTimeout = () => {
     }
 }
 
+/**
+ * @typedef {http.IncomingMessage&Express.Request} Request
+ * @typedef {http.OutgoingMessage&Express.Response} Response
+ */
 class MiddlewareHandler extends Middleware {
     _priority = Number.MIN_SAFE_INTEGER + 100;
 

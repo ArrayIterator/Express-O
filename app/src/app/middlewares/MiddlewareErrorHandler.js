@@ -9,6 +9,10 @@ import {is_function} from "../../helpers/Is.js";
 import app from "../Application.js";
 import Middleware from "../../abstracts/Middleware.js";
 
+/**
+ * @typedef {http.IncomingMessage&Express.Request} Request
+ * @typedef {http.OutgoingMessage&Express.Response} Response
+ */
 class MiddlewareErrorHandler extends Middleware {
 
     /**

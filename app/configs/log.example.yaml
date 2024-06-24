@@ -7,7 +7,7 @@
 debug:
   enabled: true
   type: rotating-file
-  path: '%storage_dir%/logs/debug.log'
+  path: '%log_dir%/debug.log'
   count: 3
   period: 1
   max_size: 10
@@ -15,7 +15,7 @@ debug:
 warn:
   enabled: true
   type: rotating-file
-  path: '%storage_dir%/logs/warn.log'
+  path: '%log_dir%/warn.log'
   count: 3
   period: 30
   max_size: 10
@@ -23,7 +23,7 @@ warn:
 trace:
   enabled: true
   type: rotating-file
-  path: '%storage_dir%/logs/trace.log'
+  path: '%log_dir%/trace.log'
   count: 3
   period: 30
   max_size: 10
@@ -31,7 +31,7 @@ trace:
 error:
   enable: true
   type: rotating-file
-  path: '%storage_dir%/logs/error.log'
+  path: '%log_dir%/error.log'
   count: 3
   period: 30
   max_size: 10

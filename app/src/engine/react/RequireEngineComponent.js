@@ -1,4 +1,4 @@
-import Config, {STORAGE_DIR} from "../../app/Config.js";
+import Config, {REACT_ENGINE_DIR} from "../../app/Config.js";
 import {basename, extname, resolve as pathResolve} from "node:path";
 import {md5} from "../../helpers/Hash.js";
 import {accessSync, constants, existsSync, mkdirSync, readFileSync, statSync, writeFileSync} from "node:fs";
@@ -15,7 +15,7 @@ import HTMLReactParser from "html-react-parser";
  *
  * @type {string}
  */
-export const COMPILED_SCRIPTS_DIR = pathResolve(STORAGE_DIR, 'react-engine-scripts');
+export const COMPILED_SCRIPTS_DIR = REACT_ENGINE_DIR;
 
 /**
  * Compilation Extension

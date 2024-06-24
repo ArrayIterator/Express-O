@@ -110,7 +110,9 @@ yarn.lock
 # ----- APP -----
 # directory ignorance
 dist/
-storage/
+storage/**/*
+!storage/README.md
+
 # my temo
 tmp/
 temp/
