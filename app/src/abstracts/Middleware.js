@@ -40,7 +40,7 @@ export default class Middleware {
             this._priority = is_numeric_integer(this._priority) ? intval(this._priority) : floatval(this._priority);
         }
         this._id = ++id;
-        Object.defineProperty(this, '_id', {enumerable: false, writable: false});
+        Object.defineProperty(this, '_id', {value: this._id, enumerable: false, writable: false});
     }
 
     /**

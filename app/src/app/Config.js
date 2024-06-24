@@ -40,6 +40,7 @@ const resolvePath = (source, _path = '') => {
     }
     return path.resolve(source, _path);
 }
+
 export const PRODUCTION_NAME_ENV = 'production';
 export const DEVELOPMENT_NAME_ENV = 'development';
 export const TEST_NAME_ENV = 'test';
@@ -48,12 +49,14 @@ export const SRC_DIR = resolvePath(import.meta.dirname, '../');
 export const APP_DIR = resolvePath(SRC_DIR, '../');
 export const ROOT_DIR = resolvePath(APP_DIR, '../');
 export const CONFIGS_DIR = resolvePath(APP_DIR, 'configs');
-export const LANGUAGES_DIR = resolvePath(APP_DIR, 'languages');
 export const CONTROLLERS_DIR = resolvePath(APP_DIR, 'controllers');
+export const LANGUAGES_DIR = resolvePath(APP_DIR, 'languages');
 export const MIDDLEWARES_DIR = resolvePath(APP_DIR, 'middlewares');
 export const VIEWS_DIR = resolvePath(APP_DIR, 'views');
 export const SRC_VIEWS_DIR = resolvePath(SRC_DIR, 'views');
 export const MODELS_DIR = resolvePath(APP_DIR, 'models');
+export const MIGRATIONS_DIR = resolvePath(APP_DIR, 'migrations');
+export const ENTITIES_DIR = resolvePath(APP_DIR, 'entities');
 // export const SEEDERS_DIR = resolvePath(APP_DIR, 'seeders');
 
 /**
@@ -69,7 +72,6 @@ export const MODELS_DIR = resolvePath(APP_DIR, 'models');
  *      views: string,
  *      storage: string,
  *      public: string,
- *      migrations: string
  * }}
  */
 const DIRS = {
@@ -102,6 +104,12 @@ const DIRS = {
     // alias of models_dir
     models: MODELS_DIR,
     model: MODELS_DIR,
+    // alias of migrations_dir
+    migrations: MIGRATIONS_DIR,
+    migration: MIGRATIONS_DIR,
+    // alias of entities_dir
+    entities: ENTITIES_DIR,
+    entity: ENTITIES_DIR,
 
     // alias of seeders_dir
     // seeders: SEEDERS_DIR,
@@ -159,7 +167,6 @@ const CONFIGS = {
         directory: {
             storage: replacePlaceHolder('%root_dir%/storage'),
             public: replacePlaceHolder('%root_dir%/public'),
-            migrations: replacePlaceHolder('%app_dir%/migrations'),
         }
     },
     cache: {},
@@ -210,8 +217,7 @@ if (existsSync(resolvePath(CONFIGS_DIR, 'environment.yaml'))) {
          *     remove_x_powered_by?: boolean,
          *     directory?: {
          *          storage?: string,
-         *          public?: string,
-         *          migrations?: string
+         *          public?: string
          *     }
          * }}
          */
@@ -294,11 +300,9 @@ if (!CONFIGS.environment.mode) {
 
 DIRS.storage = CONFIGS.environment.directory.storage;
 DIRS.public = CONFIGS.environment.directory.public;
-DIRS.migrations = CONFIGS.environment.directory.migrations;
 
 export const STORAGE_DIR = DIRS.storage;
 export const PUBLIC_DIR = DIRS.public;
-export const MIGRATIONS_DIR = DIRS.migrations;
 
 /**
  * Directories checked notes

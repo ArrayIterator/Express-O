@@ -988,8 +988,9 @@ export class Application {
                     app.use(MiddlewareNotfoundHandler.dispatch);
                     app.use(MiddlewareErrorHandler.dispatch);
                     app.use(MiddlewareGlobalErrorHandler.dispatch);
-                    app['application'] = this;
+                    // app['application'] = this;
                     Object.defineProperty(app, 'application', {
+                        value: this,
                         writable: false
                     });
                     resolve(this);

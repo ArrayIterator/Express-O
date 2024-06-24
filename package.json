@@ -25,13 +25,14 @@
     "html-react-parser": "^5.1.10",
     "ioredis": "^5.4.1",
     "knex": "^3.1.0",
+    "mysql": "^2.18.1",
     "mysql2": "^3.10.1",
     "objection": "^3.1.4",
     "pg": "^8.12.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "redshift": "^2.1.1",
     "sqlite3": "^5.1.7",
-    "typeorm": "^0.3.20",
     "winston": "^3.13.0",
     "winston-daily-rotate-file": "^5.0.0",
     "winston-rotating-file": "^0.2.0",
@@ -43,7 +44,7 @@
     "@types/node": "^20.14.8",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-    "yargs": "^17.7.2",
-    "typescript": "^5.5.2"
+    "typescript": "^5.5.2",
+    "yargs": "^17.7.2"
   }
 }

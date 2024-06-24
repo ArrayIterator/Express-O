@@ -28,4 +28,4 @@ ssl:
 directory:
   storage: '%root_dir%/storage'
   public: '%root_dir%/public'
-  migrations: '%app_dir%/migration'
+  migrations: '%app_dir%/migrations'

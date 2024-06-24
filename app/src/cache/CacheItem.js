@@ -79,6 +79,7 @@ export default class CacheItem {
             this.#defaultExpiration = defaultExpiration;
         }
         Object.defineProperty(this, 'key', {
+            value: key,
             writable: false,
         });
     }
