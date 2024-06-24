@@ -1,14 +1,14 @@
-// noinspection JSUnusedGlobalSymbols
+// noinspection JSUnusedGlobalSymbols,DuplicatedCode
 
-import Controller from "../src/abstracts/Controller.js";
-import {ALL} from "../src/router/Methods.js";
-import {md5} from "../src/helpers/Hash.js";
-import {strval} from "../src/helpers/DataType.js";
+import Controller from "../../src/abstracts/Controller.js";
+import {ALL} from "../../src/router/Methods.js";
+import {md5} from "../../src/helpers/Hash.js";
+import {strval} from "../../src/helpers/DataType.js";
 
 const modifiedSince = new Date();
 modifiedSince.setMilliseconds(0);
 
-export default class Favicon extends Controller {
+export default class FaviconTestMode extends Controller {
 
     /**
      * @inheritDoc
