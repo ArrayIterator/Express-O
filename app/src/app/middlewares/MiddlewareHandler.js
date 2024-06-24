@@ -1,3 +1,8 @@
+/**
+ * @typedef {http.IncomingMessage&Express.Request} Request
+ * @typedef {http.OutgoingMessage&Express.Response} Response
+ */
+
 import {access, error} from "../Logger.js";
 import Config from "../Config.js";
 import {is_integer, is_string} from "../../helpers/Is.js";
@@ -17,8 +22,7 @@ const ClearTimeout = () => {
 }
 
 /**
- * @typedef {http.IncomingMessage&Express.Request} Request
- * @typedef {http.OutgoingMessage&Express.Response} Response
+ * Middleware Handler
  */
 class MiddlewareHandler extends Middleware {
     _priority = Number.MIN_SAFE_INTEGER + 100;

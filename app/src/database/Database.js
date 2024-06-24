@@ -1,5 +1,18 @@
 // noinspection JSUnusedGlobalSymbols
 
+/**
+ * @typedef {any&{}} TRecord
+ * @typedef {any[]} TResult
+ * @typedef {any} T
+ * @typedef {any} T1
+ * @typedef {any} T2
+ * @typedef {string} K
+ * @typedef {TRecord & {}} TRecord2
+ * @typedef {TResult & {}} TResult2
+ * @typedef {unknown extends T ? unknown : T} AnyToUnknown<T>
+ * @typedef {object} DeferredKeySelection<TRecord, K>
+ */
+
 import {Model as KnexModel} from "objection";
 import Config, {ENVIRONMENT_MODE, ENVIRONMENT_MODES} from "../app/Config.js";
 import {is_object, is_string} from "../helpers/Is.js";
@@ -8,14 +21,7 @@ import {__} from "../l10n/Translator.js";
 import Connection from "./Connection.js";
 
 /**
- * @typedef {any&{}} TRecord
- * @typedef {any[]} TResult
- * @typedef {any} T
- * @typedef {any} T1
- * @typedef {any} T2
- * @typedef {string} K
- * @typedef {unknown extends T ? unknown : T} AnyToUnknown<T>
- * @typedef {object} DeferredKeySelection<TRecord, K>
+ * Database Wrapper
  */
 export class DatabaseWrapper {
     /**
@@ -28,6 +34,7 @@ export class DatabaseWrapper {
      * @type {string|"production"|"development"|"test"}
      */
     mode;
+
     /**
      * Constructor
      */
@@ -171,8 +178,6 @@ export class DatabaseWrapper {
     /**
      * Get Query Builder
      *
-     * @template {TRecord & {}} TRecord2
-     * @template {TResult & {}} TResult2
      * @return {knex.QueryBuilder<TRecord2, TResult2>}
      */
     get queryBuilder() {

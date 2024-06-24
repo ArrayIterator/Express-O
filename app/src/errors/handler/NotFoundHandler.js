@@ -1,11 +1,14 @@
+/**
+ * @typedef {http.IncomingMessage&Express.Request} Request
+ * @typedef {http.OutgoingMessage&Express.Response} Response
+ */
+
 import {is_json_content_type} from "../../helpers/DataType.js";
 import {http_message} from "../../helpers/HttpCode.js";
 import {__} from "../../l10n/Translator.js";
 import Application from "../../app/Application.js";
 
 /**
- * @typedef {http.IncomingMessage&Express.Request} Request
- * @typedef {http.OutgoingMessage&Express.Response} Response
  * @param {Request} request
  * @param {Response} response
  * @constructor

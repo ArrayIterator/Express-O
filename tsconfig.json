@@ -16,7 +16,7 @@
     "emitDeclarationOnly": true,
     "declarationMap": false,
     "sourceMap": false,
-    "rootDir": "./app",
+    "rootDir": "./",
     "outDir": "./@types",
     "lib": [
       "ES2020",
@@ -28,12 +28,13 @@
     ]
   },
   "include": [
-    "./app/**/*"
+    "./app/src/**/*",
+    "./watch.js",
+    "./app.js"
   ],
   "exclude": [
     "node_modules/**/*",
-    "./@types/**/*",
-    "**/*/*.d.ts",
-    "*.js"
+    "@types/**/*",
+    "**/*/*.d.ts"
   ]
 }

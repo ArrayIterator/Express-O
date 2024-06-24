@@ -9,7 +9,8 @@ import {__} from "../l10n/Translator.js";
 let id = 0;
 
 /**
- * @property {((err: Error, req: Request, res: Response, next: (err: any) => any) => (Promise<?>|any))|((req: Request, res: Response, next: (err: any) => any) => (Promise<?>|any))} dispatch
+ * @see ScanMiddlewareDirectory
+ * @type {((err: Error, req: Request, res: Response, next: (err: any) => any) => (Promise<?>|any))|((req: Request, res: Response, next: (err: any) => any) => (Promise<?>|any))} dispatch
  * @abstract
  */
 export default class Middleware {
@@ -44,9 +45,18 @@ export default class Middleware {
     }
 
     /**
+     * Priority
+     *
+     * @type {number}
+     * @protected
+     */
+    _priority = 0;
+
+    /**
      * Middleware id
      *
      * @type {number}
+     * @protected
      */
     _id;
 

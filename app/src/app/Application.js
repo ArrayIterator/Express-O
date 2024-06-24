@@ -1,5 +1,13 @@
 // noinspection JSUnusedGlobalSymbols
 
+/**
+ * @typedef {(err: any) => any} NextHandler
+ * @typedef {(err: Error, req: Request, res: Response, next?: NextHandler) => any} ErrorHandler
+ * @typedef {(req: Request, res: Response, next?: NextHandler) => any} RouteHandler
+ * @typedef {http.IncomingMessage&Express.Request} Request
+ * @typedef {http.OutgoingMessage&Express.Response} Response
+ */
+
 import express from "express";
 import fs, {accessSync, existsSync, statSync} from "node:fs";
 import tls from "node:tls";
@@ -25,7 +33,7 @@ import RuntimeException from "../errors/exceptions/RuntimeException.js";
 import PortTester from "../helpers/PortTester.js";
 import MiddlewareHandler from "./middlewares/MiddlewareHandler.js";
 import MiddlewareNotfoundHandler from "./middlewares/MiddlewareNotfoundHandler.js";
-import {debug, error, warn} from "./Logger.js";
+import {debug, error, info, warn} from "./Logger.js";
 import ReactEngine, {RegisterReactEngine} from "../engine/react/ReactEngine.js";
 import Config, {
     SRC_VIEWS_DIR,
@@ -198,13 +206,7 @@ export const ScanMiddlewareDirectory = (app, maxDepth = 10) => {
 }
 
 /**
- * Application class
- *
- * @typedef {http.IncomingMessage&Express.Request} Request
- * @typedef {http.OutgoingMessage&Express.Response} Response
- * @template {(err: any) => any} NextHandler
- * @template {(err: Error, req: Request, res: Response, next?: NextHandler) => any} ErrorHandler
- * @template {(req: Request, res: Response, next?: NextHandler) => any} RouteHandler
+ * Application
  */
 export class Application {
     /**
@@ -921,7 +923,7 @@ export class Application {
                 server = http.createServer(app);
             }
             if (port === 443 || port === 80) {
-                debug(
+                info(
                     'server',
                     sprintf(
                         __('Starting server on %s://%s (%s)'),
@@ -931,7 +933,7 @@ export class Application {
                     )
                 );
             } else {
-                debug(
+                info(
                     'server',
                     sprintf(
                         __('Starting server on %s://%s:%d (%s)'),
@@ -956,7 +958,7 @@ export class Application {
                     }
 
                     if (port === 443 || port === 80) {
-                        debug(
+                        info(
                             'server',
                             sprintf(
                                 __('Server started on %s://%s (%s)'),
@@ -966,7 +968,7 @@ export class Application {
                             )
                         );
                     } else {
-                        debug(
+                        info(
                             'server',
                             sprintf(
                                 __('Server started on %s://%s:%d (%s)'),

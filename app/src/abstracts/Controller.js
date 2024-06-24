@@ -1,5 +1,10 @@
 // noinspection JSUnusedGlobalSymbols
 
+/**
+ * @typedef {http.IncomingMessage&Express.Request} Request
+ * @typedef {http.OutgoingMessage&Express.Response} Response
+ */
+
 import {sprintf} from "../helpers/Formatting.js";
 import {__} from "../l10n/Translator.js";
 import RuntimeException from "../errors/exceptions/RuntimeException.js";
@@ -23,21 +28,13 @@ import {ALL} from "../router/Methods.js";
  * Abstract route
  *
  * @see ScanRouteDirectoryToRouter
- *
- * @typedef {http.IncomingMessage&Express.Request} Request
- * @typedef {http.OutgoingMessage&Express.Response} Response
- * @property {string[]} methods - HTTP methods
- * @property {string|RegExp|null} path - Route path
- * @property {?string} name - Route name
- * @property {number} priority - Route priority
- * @property {string} __filename - File name
- * @property {number} __route_id - Route id
  * @abstract
  */
 export default class Controller {
 
     /**
      * Response
+     *
      * @type {Response|undefined}
      * @private
      */
@@ -55,6 +52,7 @@ export default class Controller {
      * In dispatch
      *
      * @type {boolean}
+     * @private
      */
     #in_dispatch = false;
 
@@ -62,6 +60,7 @@ export default class Controller {
      * Json
      *
      * @type {?Json}
+     * @private
      */
     #json;
 
@@ -69,6 +68,7 @@ export default class Controller {
      * Status code
      *
      * @type {?number}
+     * @private
      */
     #statusCode = null;
 
@@ -76,6 +76,7 @@ export default class Controller {
      * Content type
      *
      * @type {?string}
+     * @private
      */
     #contentType = null;
 
@@ -105,6 +106,31 @@ export default class Controller {
      * @protected
      */
     path;
+
+    /**
+     * Priority
+     *
+     * @abstract
+     * @type {number}
+     * @protected
+     */
+    priority = 0;
+
+    /**
+     * Route filename
+     *
+     * @see ScanRouteDirectoryToRouter
+     * @readonly
+     */
+    __filename;
+
+    /**
+     * Route id
+     *
+     * @see ScanRouteDirectoryToRouter
+     * @readonly
+     */
+    __route_id;
 
     /**
      * Constructor

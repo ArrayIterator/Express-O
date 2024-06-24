@@ -1,27 +1,3 @@
-import {
-    is_array,
-    is_boolean,
-    is_number,
-    is_numeric,
-    is_numeric_integer,
-    is_object,
-    is_string
-} from "../helpers/Is.js";
-import InvalidArgumentException from "../errors/exceptions/InvalidArgumentException.js";
-import {__} from "../l10n/Translator.js";
-import {sprintf} from "../helpers/Formatting.js";
-import {floatval, intval, strval} from "../helpers/DataType.js";
-import KnexFn from "knex";
-import {
-    ENVIRONMENT_MODE,
-    ENVIRONMENT_MODES,
-    MIGRATIONS_DIR,
-    PRODUCTION_NAME_ENV,
-    SEEDERS_DIR,
-    TEST_NAME_ENV
-} from "../app/Config.js";
-import {resolve as resolvePath} from "node:path";
-
 /**
  * @typedef {"cockroachdb"|"sqlite3"|"redshift"|"oracledb"|"postgres"|"mssql"|"mysql2"} DriverName
  * @typedef {"cockroachdb"|"sqlite3"|"redshift"|"oracledb"|"postgres"|"mssql"|"mysql2"} Dialect
@@ -46,8 +22,34 @@ import {resolve as resolvePath} from "node:path";
  * }} DatabaseConfiguration
  * @typedef {any} TRecord
  * @typedef {any[]} TResult
+ * @typedef {TResult & any} TResult2
+ * @typedef {TRecord & {}} TRecord2
  * @typedef {KnexFn.Knex} KnexInstance
  */
+
+import {
+    is_array,
+    is_boolean,
+    is_number,
+    is_numeric,
+    is_numeric_integer,
+    is_object,
+    is_string
+} from "../helpers/Is.js";
+import InvalidArgumentException from "../errors/exceptions/InvalidArgumentException.js";
+import {__} from "../l10n/Translator.js";
+import {sprintf} from "../helpers/Formatting.js";
+import {floatval, intval, strval} from "../helpers/DataType.js";
+import KnexFn from "knex";
+import {
+    ENVIRONMENT_MODE,
+    ENVIRONMENT_MODES,
+    MIGRATIONS_DIR,
+    PRODUCTION_NAME_ENV,
+    SEEDERS_DIR,
+    TEST_NAME_ENV
+} from "../app/Config.js";
+import {resolve as resolvePath} from "node:path";
 
 /**
  * Drivers regex
@@ -556,7 +558,6 @@ export default class Connection {
     /**
      * Run raw
      *
-     * @template {TResult&any} TResult2
      * @param {string|KnexFn.Knex.Value} value
      * @param {?KnexFn.Knex.RawBinding} binding
      * @return {KnexFn.Knex.Raw<TResult2>}
@@ -626,8 +627,6 @@ export default class Connection {
     }
 
     /**
-     * @template {TRecord & {}} TRecord2
-     * @template {TResult & {}} TResult2
      * @return {knex.QueryBuilder<TRecord2, TResult2>}
      */
     get queryBuilder() {

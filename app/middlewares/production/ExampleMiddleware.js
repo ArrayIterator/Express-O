@@ -2,6 +2,9 @@
 
 import Middleware from "../../src/abstracts/Middleware.js";
 
+/**
+ * @extends Middleware
+ */
 export default class ExampleMiddleware extends Middleware {
     /**
      * @inheritDoc

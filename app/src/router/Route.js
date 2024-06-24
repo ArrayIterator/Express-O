@@ -1,5 +1,12 @@
 // noinspection JSUnusedGlobalSymbols
 
+/**
+ * @typedef {http.IncomingMessage&Express.Request} Request
+ * @typedef {http.OutgoingMessage&Express.Response} Response
+ * @typedef {(req: Request, res: Response, next: NextHandler) => any} RouteHandler
+ * @typedef {(err: any) => any} NextHandler
+ */
+
 import {
     is_array,
     is_empty,
@@ -22,10 +29,7 @@ import {floatval, intval} from "../helpers/DataType.js";
 let increment = 0;
 
 /**
- * @typedef {http.IncomingMessage&Express.Request} Request
- * @typedef {http.OutgoingMessage&Express.Response} Response
- * @typedef {(req: Request, res: Response, next: NextHandler) => any} RouteHandler
- * @typedef {(err: any) => any} NextHandler
+ * Route
  */
 export default class Route {
 

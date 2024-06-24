@@ -1,3 +1,9 @@
+
+/**
+ * @typedef {http.IncomingMessage&Express.Request} Request
+ * @typedef {http.OutgoingMessage&Express.Response} Response
+ */
+
 import {
     is_array,
     is_boolean,
@@ -16,8 +22,7 @@ import InvalidArgumentException from "../errors/exceptions/InvalidArgumentExcept
 import {__} from "../l10n/Translator.js";
 
 /**
- * @typedef {http.IncomingMessage&Express.Request} Request
- * @typedef {http.OutgoingMessage&Express.Response} Response
+ * Json
  */
 export default class Json {
     /**

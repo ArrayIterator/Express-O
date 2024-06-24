@@ -3,4 +3,4 @@
 import {Application} from "./app/src/app/Application.js";
 
 // start the application
-(async() => await (new Application()).start())();
+export default (async() => await (new Application()).start())();

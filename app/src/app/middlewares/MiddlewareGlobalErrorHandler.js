@@ -1,3 +1,8 @@
+/**
+ * @typedef {http.IncomingMessage&Express.Request} Request
+ * @typedef {http.OutgoingMessage&Express.Response} Response
+ */
+
 import Config, {ROOT_DIR} from "../Config.js";
 import {error} from "../Logger.js";
 import {__} from "../../l10n/Translator.js";

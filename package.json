@@ -5,7 +5,9 @@
   "scripts": {
     "watch": "ENV=test node watch.js",
     "production": "ENV=production node app.js",
-    "compile": "tsc"
+    "development": "ENV=development node app.js",
+    "test": "ENV=test node app.js",
+    "compile": "tsc -p tsconfig.json"
   },
   "main": "app.js",
   "dependencies": {

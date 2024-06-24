@@ -7,7 +7,6 @@ import {intval, strval} from "../helpers/DataType.js";
 import CacheRuntimeException from "./Exceptions/CacheRuntimeException.js";
 import CacheInvalidArgumentException from "./Exceptions/CacheInvalidArgumentException.js";
 import {__} from "../l10n/Translator.js";
-import RuntimeException from "../errors/exceptions/RuntimeException.js";
 
 /**
  * Using cache like PHP PSR-6
@@ -125,7 +124,8 @@ export default class CacheItemPool {
      *   MUST be thrown.
      *
      * @return {Promise<boolean>}
-     *   True if item exists in the cache, false otherwise.
+     *   True if item exists in the cache, false otherwise.import RuntimeException from "../errors/exceptions/RuntimeException.js";
+
      * @abstract
      */
     hasItem(key) {

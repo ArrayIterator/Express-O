@@ -1,5 +1,21 @@
 // noinspection ExceptionCaughtLocallyJS,JSUnusedGlobalSymbols
 
+/**
+ * @typedef {{
+ *      extensions?: string[],
+ *      docType?: string,
+ *      staticMarkup?: boolean,
+ *      viewsDir?: string,
+ *      wrapperFile: string|null,
+ *      defaultHtmlAttributes: {[key: string]: any},
+ *      defaultBodyAttributes: {[key: string]: any},
+ *      charset: string,
+ *      app?: Express,
+ *      wrapperFile?: string|null
+ *      [key: string] :any
+ * }} EngineOptions
+ */
+
 import ReactDOMServer from 'react-dom/server';
 import {is_function, is_object, is_string} from "../../helpers/Is.js";
 import InvalidArgumentException from "../../errors/exceptions/InvalidArgumentException.js";
@@ -36,19 +52,7 @@ export const RegisterReactEngine = (app, engineOptions) => {
 export const DEFAULT_EXTENSIONS = ['.tsx', '.jsx', '.js', '.mjs'];
 
 /**
- * @template {{
- *      extensions?: string[],
- *      docType?: string,
- *      staticMarkup?: boolean,
- *      viewsDir?: string,
- *      wrapperFile: string|null,
- *      defaultHtmlAttributes: {[key: string]: any},
- *      defaultBodyAttributes: {[key: string]: any},
- *      charset: string,
- *      app?: Express,
- *      wrapperFile?: string|null
- *      [key: string] :any
- * }} EngineOptions
+ * React Engine - Compiler
  */
 export class ReactEngine {
 

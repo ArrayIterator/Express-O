@@ -1,3 +1,8 @@
+/**
+ * @typedef {http.IncomingMessage&Express.Request} Request
+ * @typedef {http.OutgoingMessage&Express.Response} Response
+ */
+
 import HttpException from "../../errors/exceptions/HttpException.js";
 import Exception from "../../errors/exceptions/Exception.js";
 import {E_ERROR} from "../../errors/exceptions/ErrorCode.js";
@@ -10,8 +15,7 @@ import app from "../Application.js";
 import Middleware from "../../abstracts/Middleware.js";
 
 /**
- * @typedef {http.IncomingMessage&Express.Request} Request
- * @typedef {http.OutgoingMessage&Express.Response} Response
+ * Middleware
  */
 class MiddlewareErrorHandler extends Middleware {
 

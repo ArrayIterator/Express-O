@@ -11,53 +11,132 @@ import {fork} from "node:child_process";
 import {COMPILATION_EXTENSION} from "./app/src/engine/react/RequireEngineComponent.js";
 import {STORAGE_DIR} from "./app/src/app/Config.js";
 
-const js_file = 'app.js'; // change this to the name of your server file
-const delay = 700;
-const regexMatch = /\.(?:[tj]sx?|mjs|json|(?!\.example\.)yaml)$/i;
-const cwd = import.meta.dirname;
-const appDir = resolve(cwd, 'app');
-const file = resolve(cwd, js_file);
-const rootFileChanges = [
-    js_file
+/**
+ * Js File
+ * @type {string}
+ */
+export const MainFile = 'app.js'; // change this to the name of your server file
+
+/**
+ * Delay
+ *
+ * @type {number}
+ */
+export const TimeoutDelay = 700;
+
+/**
+ * Regex Match for exclusion
+ *
+ * @type {RegExp}
+ */
+export const RegexExclusion = /\.(?:[tj]sx?|mjs|json|(?!\.example\.)yaml)$/i;
+
+/**
+ * Current Working Directory
+ *
+ * @type {string}
+ */
+export const cwd = import.meta.dirname;
+
+/**
+ * App Directory
+ *
+ * @type {string}
+ */
+export const AppDir = resolve(cwd, 'app');
+
+/**
+ * Application root file
+ *
+ * @type {string}
+ */
+export const AppFile = resolve(cwd, MainFile);
+
+/**
+ * Root file changes list
+ *
+ * @type {string[]}
+ */
+export const RootFileChangeList = [
+    MainFile
 ];
 
 // set as current working directory
 chdir(cwd);
 
-if (!existsSync(file)) {
+if (!existsSync(AppFile)) {
     throw new Error(
         'server.js file not found. Please create a server.js file in the root of your project.'
     )
 }
-if (!statSync(file).isFile()) {
+if (!statSync(AppFile).isFile()) {
     throw new Error(
         'server.js is not a file. Please create a server.js file in the root of your project.'
     )
 }
-if (!existsSync(appDir)) {
+if (!existsSync(AppDir)) {
     throw new Error(
         'app directory not found. Please create an app directory in the root of your project.'
     );
 }
+
+/**
+ * Timeout Interval
+ *
+ * @type {?number}
+ */
 let timeout = null;
+
+/**
+ * Child fork
+ *
+ * @type {?ChildProcess}
+ */
 let childFork = null;
+
+/**
+ * Process ID
+ *
+ * @type {?number}
+ */
 let pid = null;
-const start = () => {
+
+/**
+ * Get current PID
+ *
+ * @return {?number}
+ */
+export const getPid = () => pid;
+
+/**
+ * Get child fork
+ *
+ * @return {?ChildProcess}
+ */
+export const getChildFork = () => childFork;
+
+/**
+ * Start the server
+ *
+ * @return {void}
+ */
+export const StartWatch = () => {
     if (timeout) {
         clearTimeout(timeout);
         timeout = null;
     }
 
+    // clearing
     console.clear();
-    if (childFork) {
+    if (getChildFork()) {
         console.log(chalk.yellow('Restarting server...'));
         try {
-            childFork.kill();
+            getChildFork().kill();
         } catch (err) {
             // pass
         }
         try {
-            process.kill(pid);
+            process.kill(getPid());
         } catch (err) {
             // ignore
         }
@@ -66,7 +145,7 @@ const start = () => {
     } else {
         console.log(chalk.green('Starting server...'));
     }
-    childFork = fork(file, [],
+    childFork = fork(AppFile, [],
         {
             // silent: true,
             // detached: true,
@@ -103,14 +182,47 @@ process.on('SIGINT', function () {
     }
     process.exit();
 })
+
+/**
+ * Last listened file
+ *
+ * @type {?string}
+ */
 let lastFile = null;
+
+/**
+ * Last listened time
+ *
+ * @type {?number}
+ */
 let lastTime = null;
-const listen = (event, filename) => {
+
+/**
+ * Get last file
+ *
+ * @return {?string}
+ */
+export const getLastFile = () => lastFile;
+
+/**
+ * Get last time
+ *
+ * @return {?number}
+ */
+export const getLastTime = () => lastTime;
+
+/**
+ * Listen for file changes
+ *
+ * @param {WatchEventType} _event
+ * @param {?string} filename
+ */
+export const FileListener = (_event, filename) => {
     if (filename.startsWith('.')) {
         return;
     }
     let time = Date.now();
-    if (lastFile === filename && lastTime !== null && (time - lastTime) < 50) {
+    if (getLastFile() === filename && getLastTime() !== null && (time - getLastTime()) < 50) {
         return;
     }
 
@@ -120,7 +232,7 @@ const listen = (event, filename) => {
     if (filename.endsWith(COMPILATION_EXTENSION)
         || filename.startsWith(STORAGE_DIR)
         || filename.endsWith('.example.yaml')
-        || ! regexMatch.test(filename)
+        || ! RegexExclusion.test(filename)
     ) {
         return;
     }
@@ -128,9 +240,9 @@ const listen = (event, filename) => {
         return;
     }
     console.log(chalk.blue('File changed:'), filename);
-    if (!filename.startsWith(appDir)) {
+    if (!filename.startsWith(AppDir)) {
         const fileName = filename.replace(cwd, '').replace(/\\/g, '/').replace(/^\//, '');
-        if (!rootFileChanges.includes(fileName)) {
+        if (!RootFileChangeList.includes(fileName)) {
             return;
         }
     }
@@ -138,9 +250,9 @@ const listen = (event, filename) => {
         clearTimeout(timeout);
         timeout = null;
     }
-    timeout = setTimeout(start, delay);
+    timeout = setTimeout(StartWatch, TimeoutDelay);
 };
 
-watch(cwd, {recursive: true}, listen);
+watch(cwd, {recursive: true}, FileListener);
 
-start();
+StartWatch();

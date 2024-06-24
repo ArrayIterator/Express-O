@@ -1,3 +1,9 @@
+/**
+ * @typedef {{
+ *   [context_msgid: string]: TranslationEntry
+ * }} TranslationEntries
+ */
+
 import TranslationEntry from "./TranslationEntry.js";
 import {PluralForm} from "./PluralForm.js";
 import {GenerateTranslationId, NormalizeHeaderKeys, NormalizeLocale} from "./Filter.js";
@@ -7,9 +13,7 @@ import {readFileSync} from "node:fs";
 import {extname} from "node:path";
 
 /**
- * @template {{
- *   [context_msgid: string]: TranslationEntry
- * }} TranslationEntries
+ * Translations
  */
 export default class Translation {
     /**

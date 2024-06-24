@@ -1,5 +1,12 @@
 // noinspection JSUnusedGlobalSymbols
 
+/**
+ * @typedef {http.IncomingMessage&Express.Request} Request
+ * @typedef {http.OutgoingMessage&Express.Response} Response
+ * @typedef {(req: Request, res: Response, next?: NextHandler) => any} RouteHandler
+ * @typedef {(err: any) => any} NextHandler
+ */
+
 import Route from "./Route.js";
 import InvalidArgumentException from "../errors/exceptions/InvalidArgumentException.js";
 import {sprintf} from "../helpers/Formatting.js";
@@ -10,11 +17,9 @@ import {__} from "../l10n/Translator.js";
 import Controller from "../abstracts/Controller.js";
 import {Application} from "../app/Application.js";
 
+
 /**
- * @typedef {http.IncomingMessage&Express.Request} Request
- * @typedef {http.OutgoingMessage&Express.Response} Response
- * @typedef {(req: Request, res: Response, next?: NextHandler) => any} RouteHandler
- * @typedef {(err: any) => any} NextHandler
+ * Router
  */
 export default class Router {
 

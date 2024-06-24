@@ -1,11 +1,15 @@
+/**
+ * @typedef {http.IncomingMessage&Express.Request} Request
+ * @typedef {http.OutgoingMessage&Express.Response} Response
+ */
+
 import NotFoundHandler from "../../errors/handler/NotFoundHandler.js";
 import {is_function, is_promise} from "../../helpers/Is.js";
 import application from "../Application.js";
 import Middleware from "../../abstracts/Middleware.js";
 
 /**
- * @typedef {http.IncomingMessage&Express.Request} Request
- * @typedef {http.OutgoingMessage&Express.Response} Response
+ * Middleware notfound handler
  */
 class MiddlewareNotfoundHandler extends Middleware {
     _priority = Number.MAX_SAFE_INTEGER - 100;

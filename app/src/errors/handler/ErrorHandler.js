@@ -1,3 +1,8 @@
+/**
+ * @typedef {http.IncomingMessage&Express.Request} Request
+ * @typedef {http.OutgoingMessage&Express.Response} Response
+ */
+
 import Exception from "../exceptions/Exception.js";
 import {E_ERROR} from "../exceptions/ErrorCode.js";
 import HttpException from "../exceptions/HttpException.js";
@@ -8,12 +13,8 @@ import {is_json_content_type} from "../../helpers/DataType.js";
 import {__} from "../../l10n/Translator.js";
 import Application from "../../app/Application.js";
 
-
 /**
  * Error handler
- *
- * @typedef {http.IncomingMessage&Express.Request} Request
- * @typedef {http.OutgoingMessage&Express.Response} Response
  *
  * @param {Error} err Error object
  * @param {Request} request Request object
