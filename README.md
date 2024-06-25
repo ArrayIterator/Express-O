@@ -6,6 +6,74 @@
 
 The application running 1 instance, and only accepted 1 environment mode variable `development`, `production`, or `test`.
 
+Environment mode can be override by node arguments or environment :
+
+- ```ENV=production|development|test node app.js```
+- ```node app.js ---env=production|development|test```
+- ```node app.js ---env production|development|test```
+
+Without environment mode variable, the application will running as default `mode` on **_[environment config](app/configs/environment.example.yaml)_**.
+
+Running `watch.js` also affected by the environment mode.
+
+### Development mode
+
+Match include `dev` will also resolve as `development`
+
+```bash
+ENV=development node app.js
+```
+
+**OR**
+
+```bash
+node app.js --env development
+```
+
+### Production mode
+
+Match include `prod` will also resolve as `production`
+
+```bash
+ENV=production node app.js
+```
+
+**OR**
+
+```bash
+node app.js --env production
+```
+
+### Test mode
+
+Match include `tes` will also resolve as `test`
+
+```bash
+ENV=test node app.js
+```
+
+**OR**
+
+```bash
+node app.js --env test
+```
+
+The priority match is `prod` > `dev` > `tes`
+
+### RUNNING AS WATCH MODE
+
+The application can be running as watch mode by using [watch.js](watch.js) file, by running with
+
+```bash
+npm run watch
+```
+
+**OR**
+
+```bash
+node watch.js
+```
+
 ## DIRECTORY STRUCTURE
 
 The applications folders that contains 3 environment mode directory `development`, `production`, and `test` are:
@@ -120,13 +188,38 @@ app/
 ├── app.js (app entry point)
 ├── babel.config.js (babel config)
 ├── LICENSE (license)
+├── knexfile.js (Knex CLI configuration file)
 ├── package.json (node package.json)
 ├── README.md (readme)
-├── watch.json (watcher daemon for development / testing only - the environment mode is `test`)
+├── watch.js (watcher daemon for development / testing only - the environment mode is `test`)
 └── tsconfig.json (typescript config)
 
 ```
 
 ## LICENSE
 
-MIT License (MIT) - [LICENSE](LICENSE)
+The license of this code under [MIT LICENSE](LICENSE)
+
+```txt
+MIT License
+
+Copyright (c) 2024
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```

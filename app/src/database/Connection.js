@@ -17,6 +17,9 @@
  *      timeout?: number,
  *      connect_timeout?:number,
  *      prefix: string,
+ *      pool?: number,
+ *      migration_table: string,
+ *      query_timeout?: number,
  *      environment: "production"|"development"|"test",
  *      [key: string]: any
  * }} DatabaseConfiguration
@@ -41,7 +44,7 @@ import {__} from "../l10n/Translator.js";
 import {sprintf} from "../helpers/Formatting.js";
 import {floatval, intval, strval} from "../helpers/DataType.js";
 import KnexFn from "knex";
-import {
+import Config, {
     ENVIRONMENT_MODE,
     ENVIRONMENT_MODES,
     MIGRATIONS_DIR,
@@ -50,6 +53,8 @@ import {
     TEST_NAME_ENV
 } from "../app/Config.js";
 import {resolve as resolvePath} from "node:path";
+import RuntimeException from "../errors/exceptions/RuntimeException.js";
+import {readFileSync} from "node:fs";
 
 /**
  * Drivers regex
@@ -57,6 +62,29 @@ import {resolve as resolvePath} from "node:path";
  * @type {RegExp}
  */
 const DRIVER_REGEX = /((?<mysql2>mysq)|(?<sqlite3>sqlite)|(?<postgres>postgre)|(?<oracledb>oracle)|(?<mssql>mssql)|(?<redshift>reds)|(?<cockroachdb>cockr))/i;
+
+/**
+ * Default migration table
+ *
+ * @type {string}
+ */
+export const DEFAULT_MIGRATION_TABLE = 'knex_migration';
+
+/**
+ * Migration stub
+ *
+ * @file stub/migration.stub
+ * @type {string}
+ */
+export const MIGRATION_STUB = resolvePath(import.meta.dirname, 'stub/migration.stub');
+
+/**
+ * Seed stub
+ *
+ * @file stub/seed.stub
+ * @type {string}
+ */
+export const SEED_STUB = resolvePath(import.meta.dirname, 'stub/seed.stub');
 
 /**
  * Drivers port
@@ -177,9 +205,13 @@ export const ParseDSN = (dsn) => {
         debug: /(?:^|\s*;)\s*(?:db|database)?debug\s*=\s*(['"]?)(?<value>[^\1;]*)\1\s*(;|$)/i,
         nullable: /(?:^|\s*;)\s*(?:db|database)?nullable\s*=\s*(['"]?)(?<value>[^\1;]*)\1\s*(;|$)/i,
         timeout: /(?:^|\s*;)\s*(?:db|database)?time_*out\s*=\s*(['"]?)(?<value>[^\1;]*)\1\s*(;|$)/i,
+        query_timeout: /(?:^|\s*;)\s*(?:db|database)?query_time*out\s*=\s*(['"]?)(?<value>[^\1;]*)\1\s*(;|$)/i,
+        pool: /(?:^|\s*;)\s*(?:db|database)?pools?\s*=\s*(['"]?)(?<value>[^\1;]*)\1\s*(;|$)/i,
         connect_timeout: /(?:^|\s*;)\s*(?:db|database)?connect_*time_*out\s*=\s*(['"]?)(?<value>[^\1;]*)\1\s*(;|$)/i,
         token: /(?:^|\s*;)\s*(?:db|database)?token\s*=\s*(['"]?)(?<value>[^\1;]*)\1\s*(;|$)/i,
         prefix: /(?:^|\s*;)\s*(?:db|database)?prefix\s*=\s*(['"]?)(?<value>[^\1;]*)\1\s*(;|$)/i,
+        environment: /(?:^|\s*;)\s*(?:db|database)?environment\s*=\s*(['"]?)(?<value>[^\1;]*)\1\s*(;|$)/i,
+        migration_table: /(?:^|\s*;)\s*(?:db|database)?migration_*table\s*=\s*(['"]?)(?<value>[^\1;]*)\1\s*(;|$)/i,
     }
     const result = {
         debug: ENVIRONMENT_MODE === TEST_NAME_ENV,
@@ -196,7 +228,10 @@ export const ParseDSN = (dsn) => {
         connect_timeout: null,
         timeout: null,
         environment: ENVIRONMENT_MODE,
-        prefix: ''
+        prefix: '',
+        query_timeout: null,
+        pool: null,
+        migration_table: DEFAULT_MIGRATION_TABLE
     };
     const skip_name = [
         'driver',
@@ -274,8 +309,26 @@ export const ParseDSN = (dsn) => {
             result.timeout = null;
         }
     }
+    if (result.query_timeout) {
+        if (is_numeric(result.query_timeout)) {
+            result.query_timeout = is_numeric_integer(result.query_timeout) ? intval(result.query_timeout) : floatval(result.query_timeout);
+        } else {
+            result.query_timeout = null;
+        }
+    }
     if (!is_string(result.prefix)) {
         result.prefix = '';
+    }
+    if (is_numeric(result.pool)) {
+        result.pool = intval(result.pool);
+    }
+    if (isNaN(result.pool) || result.pool < 1) {
+        result.pool = null;
+    }
+    if (!is_string(result.migration_table) || result.migration_table.trim() === '') {
+        result.migration_table = DEFAULT_MIGRATION_TABLE;
+    } else {
+        result.migration_table = result.migration_table.trim();
     }
     result.environment = is_string(result.environment) ? result.environment.trim().toLowerCase() : ENVIRONMENT_MODE;
     result.environment = ENVIRONMENT_MODES.includes(result.environment) ? result.environment : ENVIRONMENT_MODE;
@@ -319,7 +372,7 @@ export const NormalizeConfiguration = (config) => {
             )
         );
     }
-    const username = is_string(config.user) ? config.user : (
+    const user = is_string(config.user) ? config.user : (
         (is_string(config.username) ? config.username : (
             is_string(config.dbuser) ? config.dbuser : (
                 is_string(config.dbusername) ? config.dbusername : null
@@ -357,6 +410,45 @@ export const NormalizeConfiguration = (config) => {
     const unix_socket = is_string(config.unix_socket) ? config.unix_socket : (
         is_string(config.socket) ? config.socket : null
     );
+    const pool = is_numeric(config.pool) && intval(config.pool) > 0 ? intval(config.pool) : (
+        is_numeric(config.dbpool) && intval(config.dbpool) > 0 ? intval(config.dbpool) : null
+    );
+    const nullable = is_boolean(config.nullable) ? config.nullable : (
+        is_boolean(config.dbnullable) ? config.dbnullable : true
+    );
+    const debug = is_boolean(config.debug) ? config.debug : (
+        is_boolean(config.dbdebug) ? config.dbdebug : (
+            ENVIRONMENT_MODE === TEST_NAME_ENV
+        )
+    );
+    let environment = is_string(config.environment) ? config.environment.trim().toLowerCase() : (
+        is_string(config.dbenvironment) ? config.dbenvironment.trim().toLowerCase() : ENVIRONMENT_MODE
+    );
+    environment = ENVIRONMENT_MODES.includes(environment) ? environment : ENVIRONMENT_MODE;
+    const connect_timeout = is_numeric(config.connect_timeout) ? (
+        is_numeric_integer(config.connect_timeout) ? intval(config.connect_timeout) : floatval(config.connect_timeout)
+    ) : (
+        is_numeric(config.dbconnect_timeout) ? (
+            is_numeric_integer(config.dbconnect_timeout) ? intval(config.dbconnect_timeout) : floatval(config.dbconnect_timeout)
+        ) : null
+    );
+    const timeout = is_numeric(config.timeout) ? (
+        is_numeric_integer(config.timeout) ? intval(config.timeout) : floatval(config.timeout)
+    ) : (
+        is_numeric(config.dbtimeout) ? (
+            is_numeric_integer(config.dbtimeout) ? intval(config.dbtimeout) : floatval(config.dbtimeout)
+        ) : null
+    );
+    const query_timeout = is_numeric(config.query_timeout) ? (
+        is_numeric_integer(config.query_timeout) ? intval(config.query_timeout) : floatval(config.query_timeout)
+    ) : (
+        is_numeric(config.dbquery_timeout) ? (
+            is_numeric_integer(config.dbquery_timeout) ? intval(config.dbquery_timeout) : floatval(config.dbquery_timeout)
+        ) : null
+    );
+    const migration_table = is_string(config.migration_table) && config.migration_table.trim() !== '' ? config.migration_table.trim() : (
+        is_string(config.dbmigration_table) && config.dbmigration_table.trim() !== '' ? config.dbmigration_table.trim() : DEFAULT_MIGRATION_TABLE
+    );
     const to_skip = [
         'user',
         'username',
@@ -376,19 +468,38 @@ export const NormalizeConfiguration = (config) => {
         'dbfilename',
         'dbfile',
         'timezone',
-        'dbtimezone'
+        'dbtimezone',
+        'pool',
+        'dbpool',
+        'environment',
+        'dbenvironment',
+        'timeout',
+        'dbtimeout',
+        'connect_timeout',
+        'dbconnect_timeout',
+        'migration_table',
+        'dbmigration_table',
     ];
     const result = {
+        debug,
+        nullable,
         driver,
-        user: username,
+        user,
         password,
         dialect: DIALECTS[driver] || null,
-        host,
-        port,
+        host: host || '127.0.0.1',
+        port: port || DefaultPort(driver),
         database,
         filename,
         timezone,
         unix_socket,
+        connect_timeout,
+        timeout,
+        environment,
+        prefix: '',
+        pool,
+        query_timeout,
+        migration_table
     };
     for (let key in config) {
         if (to_skip.includes(key)) {
@@ -400,14 +511,35 @@ export const NormalizeConfiguration = (config) => {
 }
 
 /**
- * Create Knex object connection
+ * Create Knex configuration
  *
  * @param {string|{[key: string]: any}} config
- * @return {KnexInstance&{
- *     connection_configuration: DatabaseConfiguration
- * }}
+ * @return {
+ *  {
+ *      useNullAsDefault: boolean,
+ *      debug: boolean,
+ *      dialect: string,
+ *      migrations: {extension: string, directory: string, stub: string},
+ *      seeds: {extension: string, directory: string, stub: string},
+ *      pool: {min: number, max: number},
+ *      client: string,
+ *      connection: {
+ *          database: string,
+ *          host: string,
+ *          charset?: string,
+ *          user?: string,
+ *          password?: string,
+ *          compress?: boolean,
+ *          connectionTimeout?: number,
+ *          connTimeout?:number,
+ *          timeout?: number,
+ *          query_timeout?:number,
+ *          collation?: string
+ *      }
+ *  }
+ * }
  */
-export const CreateKnexConnection = (config) => {
+export const CreateKnexConfig = (config) => {
     config = NormalizeConfiguration(config);
     const connection = {
         host: config.host,
@@ -438,9 +570,13 @@ export const CreateKnexConnection = (config) => {
     }
     if (is_number(config.connect_timeout)) {
         connection.connectionTimeout = config.connect_timeout;
+        connection.connTimeout = config.connect_timeout;
     }
     if (is_number(config.timeout)) {
         connection.timeout = config.timeout;
+    }
+    if (is_number(config.query_timeout)) {
+        connection.query_timeout = config.query_timeout;
     }
     if (config.uri && is_string(config.uri)) {
         connection.uri = config.uri;
@@ -456,20 +592,59 @@ export const CreateKnexConnection = (config) => {
     } else {
         connection.debug = ENVIRONMENT_MODE !== PRODUCTION_NAME_ENV;
     }
-
-    const knex = KnexFn({
+    if (is_numeric_integer(config.pool)) {
+        connection.pool = {
+            min: config.pool > 2 ? 2 : 1,
+            max: config.pool,
+            // refreshIdle: true,
+        }
+    } else {
+        connection.pool = {
+            min: 2,
+            max: 10,
+            // refreshIdle: true,
+        }
+    }
+    if (is_string(config.collation)) {
+        connection.collation = config.collation;
+    }
+    return {
         seeds: {
             directory: resolvePath(SEEDERS_DIR, config.environment),
+            extension: 'js',
+            stub: SEED_STUB
         },
         migrations: {
             directory: resolvePath(MIGRATIONS_DIR, config.environment),
+            extension: 'js',
+            stub: MIGRATION_STUB
         },
         debug: connection.debug,
         client: config.driver,
         dialect: config.dialect,
         useNullAsDefault: config.nullable,
-        connection
-    });
+        connection: {
+            ...connection,
+            pool: {
+                ...connection.pool,
+                name: 'knex_pool@' + config.environment,
+                refreshIdle: true,
+            },
+        },
+        pool: connection.pool,
+    };
+}
+
+/**
+ * Create Knex object connection
+ *
+ * @param {string|{[key: string]: any}} config
+ * @return {KnexInstance&{
+ *     connection_configuration: DatabaseConfiguration
+ * }}
+ */
+export const CreateKnexConnection = (config) => {
+    const knex = KnexFn(CreateKnexConfig(config));
     const configuration = Object.assign({}, config);
     Object.freeze(configuration);
     Object.defineProperty(knex, 'connection_configuration', {
@@ -478,6 +653,74 @@ export const CreateKnexConnection = (config) => {
         configurable: false
     })
     return knex;
+}
+
+/**
+ * Create Default Knex Configuration
+ *
+ * @param {string} mode
+ * @return {
+ *  {
+ *      useNullAsDefault: boolean,
+ *      debug: boolean,
+ *      dialect: string,
+ *      migrations: {extension: string, directory: string},
+ *      seeds: {extension: string, directory: string},
+ *      pool: {min: number, max: number},
+ *      client: string,
+ *      connection: {
+ *          database: string,
+ *          host: string,
+ *          charset?: string,
+ *          user?: string,
+ *          password?: string,
+ *          compress?: boolean,
+ *          connectionTimeout?: number,
+ *          connTimeout?:number,
+ *          timeout?: number,
+ *          query_timeout?:number,
+ *          collation?: string
+ *      }
+ *  }
+ * }
+ */
+export const CreateDefaultKnexConfiguration = (mode = ENVIRONMENT_MODE) => {
+    const configs = Config.getObject('database');
+    const environment = is_string(mode) && ENVIRONMENT_MODES.includes(mode) ? mode : ENVIRONMENT_MODE;
+    let config;
+    if (is_object(configs[environment])) {
+        config = configs[environment];
+    } else if (is_object(configs.default)) {
+        config = configs.default;
+    } else {
+        if (Config.is_production) {
+            if (!is_object(configs['prod'])) {
+                throw new RuntimeException(
+                    __('Database configuration not found')
+                );
+            }
+            config = configs['prod'];
+        } else {
+            if (Config.is_test && is_object(configs['test'])) {
+                config = configs['test'] || undefined;
+            } else if (Config.is_development && is_object(configs['development'])) {
+                config = configs['development'] || undefined;
+            } else if (Config.is_development && is_object(configs['dev'])) {
+                config = configs['dev'] || undefined;
+            } else if (is_string(configs.driver)
+                && /(sqlite|mysql|postgre|oracle|mssql)/.test(configs.driver.toLowerCase())
+            ) {
+                config = configs;
+            }
+
+            if (!config) {
+                throw new RuntimeException(
+                    __('Database configuration not found')
+                );
+            }
+        }
+    }
+    return CreateKnexConfig(config);
 }
 
 /**
@@ -528,6 +771,9 @@ export const QuoteIdentifier = (identity) => {
     return '"' + identity.replace(/"/g, '""') + '"';
 }
 
+/**
+ * Connection
+ */
 export default class Connection {
     /**
      * Configuration

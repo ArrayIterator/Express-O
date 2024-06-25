@@ -7,7 +7,6 @@
 .VolumeIcon.icns
 .DS_Store
 
-
 # Windows Installer files
 *.cab
 *.msi
@@ -122,3 +121,40 @@ app/configs/*.yaml
 !app/configs/*.example.yaml
 # exclude .env
 .env
+
+# exclude seeders
+app/seeders/**/*.js
+# exclude migrations
+app/migrations/**/*.js
+# exclude entities
+app/entities/**/*.js
+
+# exclude middleware
+app/middlewares/**/*.js
+!app/middlewares/development/ExampleMiddlewareDevelopment.js
+!app/middlewares/production/ExampleMiddleware.js
+!app/middlewares/test/ExampleMiddlewareTest.js
+
+# exclude controllers / route
+app/controllers/**/*.js
+!app/controllers/test/FaviconTestMode.js
+!app/controllers/test/HomepageTestMode.js
+!app/controllers/production/Favicon.js
+!app/controllers/production/Homepage.js
+!app/controllers/development/FaviconDevelopmentMode.js
+!app/controllers/development/HomepageDevelopmentMode.js
+
+# exclude models
+app/models/**/*.js
+
+# exclude languages
+app/languages/**/*.*
+!app/languages/**/README.md
+
+# exclude views
+app/views/**/*.*
+!app/views/**/README.md
+!app/views/README.md
+!app/views/development/welcome.tsx
+!app/views/production/welcome.tsx
+!app/views/test/welcome.tsx

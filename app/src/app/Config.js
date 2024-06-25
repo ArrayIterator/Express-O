@@ -16,8 +16,26 @@ import {
     is_scalar,
     is_string
 } from "../helpers/Is.js";
+const processENV = strval(process.env.ENV).toLowerCase().trim();
+let env = processENV;
+for (let index in process.argv) {
+    if (process.argv[index].startsWith('--env')) {
+        index = intval(index);
+        const val = strval(process.argv[index]).trim();
+        env = '';
+        if (val.startsWith('--env=')) {
+            env = val.substring(6).trim();
+        }
+        if (env === '' || index < process.argv.length - 1) {
+            env = strval(process.argv[index + 1]).trim();
+        }
+        env = env.toLowerCase().trim();
+        env = env === '' ? processENV : env;
+        break;
+    }
+}
 
-export const NODE_ENV = strval(process.env.ENV).trim();
+export const NODE_ENV = env;
 export const NODE_PORT = intval(process.env.PORT);
 export const NODE_TIMEOUT = intval(process.env.TIMEOUT);
 export const NODE_LANGUAGE = strval(process.env.LANGUAGE).trim();
@@ -268,9 +286,9 @@ if (existsSync(resolvePath(CONFIGS_DIR, 'environment.yaml'))) {
 }
 
 if (NODE_ENV !== '') {
-    CONFIGS.environment.mode = NODE_ENV.startsWith('prod') ? PRODUCTION_NAME_ENV : (
-        NODE_ENV.startsWith('dev') ? DEVELOPMENT_NAME_ENV : (
-            NODE_ENV.startsWith('test') ? TEST_NAME_ENV : CONFIGS.environment.mode
+    CONFIGS.environment.mode = NODE_ENV.includes('prod') ? PRODUCTION_NAME_ENV : (
+        NODE_ENV.includes('dev') ? DEVELOPMENT_NAME_ENV : (
+            NODE_ENV.includes('tes') ? TEST_NAME_ENV : CONFIGS.environment.mode
         )
     );
 }
@@ -288,9 +306,9 @@ if (!CONFIGS.environment.mode) {
 } else {
     // only accept test/production/development
     let env_ = CONFIGS.environment.mode.trim().toLowerCase();
-    CONFIGS.environment.mode = env_.startsWith('prod') ? PRODUCTION_NAME_ENV : (
-        env_.startsWith('dev') ? DEVELOPMENT_NAME_ENV : (
-            env_.startsWith('test') ? TEST_NAME_ENV : PRODUCTION_NAME_ENV
+    CONFIGS.environment.mode = env_.includes('prod') ? PRODUCTION_NAME_ENV : (
+        env_.includes('dev') ? DEVELOPMENT_NAME_ENV : (
+            env_.includes('tes') ? TEST_NAME_ENV : PRODUCTION_NAME_ENV
         )
     );
 }

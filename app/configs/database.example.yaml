@@ -24,8 +24,12 @@ production:
   charset: 'utf8mb4'
   # database collation
   collation: 'utf8mb4_unicode_ci'
+  # database migration table
+  migration_table: 'migrations'
   # database prefix
   prefix: ''
+  # database max pool
+  pool: 20
 development:
   # database driver
   driver: 'mysql'
@@ -43,5 +47,32 @@ development:
   charset: 'utf8mb4'
   # database collation
   collation: 'utf8mb4_unicode_ci'
+  # database migration table
+  migration_table: 'migrations'
   # database prefix
   prefix: ''
+  # database max pool
+  pool: 20
+test:
+  # database driver
+  driver: 'mysql'
+  # database user
+  username: 'username'
+  # database password
+  password: 'password'
+  # database host
+  host: 'localhost'
+  # database port
+  port: 3306
+  # database name
+  database: 'db_name_development'
+  # database charset
+  charset: 'utf8mb4'
+  # database collation
+  collation: 'utf8mb4_unicode_ci'
+  # database migration table
+  migration_table: 'migrations'
+  # database prefix
+  prefix: ''
+  # database max pool
+  pool: 20

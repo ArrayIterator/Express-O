@@ -14,11 +14,9 @@
  */
 
 import {Model as KnexModel} from "objection";
-import Config, {ENVIRONMENT_MODE, ENVIRONMENT_MODES} from "../app/Config.js";
-import {is_object, is_string} from "../helpers/Is.js";
-import RuntimeException from "../errors/exceptions/RuntimeException.js";
-import {__} from "../l10n/Translator.js";
-import Connection from "./Connection.js";
+import {ENVIRONMENT_MODE, ENVIRONMENT_MODES} from "../app/Config.js";
+import {is_string} from "../helpers/Is.js";
+import Connection, {CreateDefaultKnexConfiguration} from "./Connection.js";
 
 /**
  * Database Wrapper
@@ -112,44 +110,7 @@ export class DatabaseWrapper {
         if (this.#connection) {
             return this;
         }
-
-        const configs = Config.getObject('database');
-        const environment = this.mode;
-        let config;
-        if (is_object(configs[environment])) {
-            config = configs[environment];
-        } else if (is_object(configs.default)) {
-            config = configs.default;
-        } else {
-            if (Config.is_production) {
-                if (!is_object(configs['prod'])) {
-                    throw new RuntimeException(
-                        __('Database configuration not found')
-                    );
-                }
-                config = configs['prod'];
-            } else {
-                if (Config.is_test && is_object(configs['test'])) {
-                    config = configs['test'] || undefined;
-                } else if (Config.is_development && is_object(configs['development'])) {
-                    config = configs['development'] || undefined;
-                } else if (Config.is_development && is_object(configs['dev'])) {
-                    config = configs['dev'] || undefined;
-                } else if (is_string(configs.driver)
-                    && /(sqlite|mysql|postgre|oracle|mssql)/.test(configs.driver.toLowerCase())
-                ) {
-                    config = configs;
-                }
-
-                if (!config) {
-                    throw new RuntimeException(
-                        __('Database configuration not found')
-                    );
-                }
-            }
-        }
-        config.environment = this.mode;
-        this.#connection = new Connection(config);
+        this.#connection = new Connection(CreateDefaultKnexConfiguration(this.mode));
         KnexModel.knex(this.knex);
         return this;
     }

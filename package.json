@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "watch": "ENV=test node watch.js",
-    "production": "ENV=production node app.js",
-    "development": "ENV=development node app.js",
-    "test": "ENV=test node app.js",
+    "watch": "node watch.js --env test",
+    "production": "node app.js --env production",
+    "development": "node app.js --env development",
+    "test": "node app.js --env test",
     "compile": "tsc -p tsconfig.json"
   },
   "main": "app.js",
@@ -46,7 +46,6 @@
     "@types/node": "^20.14.8",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-    "typescript": "^5.5.2",
-    "yargs": "^17.7.2"
+    "typescript": "^5.5.2"
   }
 }

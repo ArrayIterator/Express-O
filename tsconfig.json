@@ -35,6 +35,7 @@
   "exclude": [
     "node_modules/**/*",
     "@types/**/*",
-    "**/*/*.d.ts"
+    "**/*/*.d.ts",
+    "**/*.stub"
   ]
 }
