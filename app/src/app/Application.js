@@ -50,6 +50,7 @@ import Route from "../router/Route.js";
 import {resolve as resolvePath} from "node:path";
 import Json from "./Json.js";
 import Middleware from "../abstracts/Middleware.js";
+import {filter_ipv4, ip_version, is_bogon_ip, is_broadcast_ip} from "../helpers/Ip.js";
 
 // set strict routing
 express.Router({caseSensitive: true, strict: true});
@@ -673,7 +674,7 @@ export class Application {
             return this;
         }
         if (handler instanceof Middleware) {
-            handler = handler.dispatch;
+            handler = handler['dispatch'];
             if (!is_function(handler)) {
                 return this;
             }
@@ -702,7 +703,7 @@ export class Application {
             return this;
         }
         if (handler instanceof Middleware) {
-            handler = handler.dispatch;
+            handler = handler['dispatch'];
             if (!is_function(handler)) {
                 return this;
             }
@@ -873,7 +874,26 @@ export class Application {
                 ));
                 return;
             }
+
+            const OriginHostname = this.hostname;
+            /**
+             * Set hostname to ip if not public
+             * Check using ip
+             */
+            if (!this.is_public) { // public will always 0.0.0.0
+                let ip = Config.get('environment.ip');
+                const version_ip = ip_version(ip);
+                if (version_ip) {
+                    ip = version_ip === 4 ? filter_ipv4(ip) : filter_ipv4(ip);
+                    // if is local / bogon ip and it was not broadcast
+                    if (ip && !is_broadcast_ip(ip) && is_bogon_ip(ip)) {
+                        this._hostname = ip;
+                    }
+                }
+            }
+
             this._is_ssl = port === 443 || this.is_ssl;
+            const originPort = port;
             if (!port) {
                 debug('server', __('No port set, finding available ports.'));
                 for (let i = PORT_RANGE_START; i <= PORT_RANGE_END; i++) {
@@ -885,6 +905,24 @@ export class Application {
                         continue;
                     }
                     port = _port;
+                    break;
+                }
+            }
+            let CurrentOriginPort = originPort;
+            if (this.hostname !== OriginHostname && !CurrentOriginPort) {
+                debug('server', __('No port set, finding available ports for origin hostname'));
+                for (let i = PORT_RANGE_START; i <= PORT_RANGE_END; i++) {
+                    if (this.isBlacklistedPort(i)) {
+                        continue;
+                    }
+                    let _port = await PortTester(i, this.hostname).catch(() => null);
+                    if (!is_integer(_port)) {
+                        continue;
+                    }
+                    CurrentOriginPort = _port;
+                    port = _port;
+                    // revert
+                    this._hostname = OriginHostname;
                     break;
                 }
             }
@@ -946,88 +984,115 @@ export class Application {
             }
 
             this._serverPort = port;
-            server
-                .listen(port, this.hostname)
+            const listen = (port, hostname) => {
+                return new Promise((resolve, reject) => {
+                    server
+                        .listen(port, hostname, (err) => {
+                            if (err) {
+                                reject(err);
+                                return;
+                            }
+                            resolve(server);
+                        })
+                        .setTimeout(this.timeout)
+                        .on('error', (err) => {
+                           reject(err);
+                        });
+                });
+            }
+            const listener = async (server) => {
                 // on fail create
-                .once('listening', async (err) => {
-                    if (err) {
-                        this._express = null;
-                        error('server', err);
-                        reject(err);
+                if (port === 443 || port === 80) {
+                    info(
+                        'server',
+                        sprintf(
+                            __('Server started on %s://%s (%s)'),
+                            this.is_ssl ? 'https' : 'http',
+                            this.hostname,
+                            this.mode
+                        )
+                    );
+                } else {
+                    info(
+                        'server',
+                        sprintf(
+                            __('Server started on %s://%s:%d (%s)'),
+                            this.is_ssl ? 'https' : 'http',
+                            this.hostname,
+                            port,
+                            this.mode
+                        )
+                    );
+                }
+
+                if (is_array(this.#registeredRouteScannedId)) {
+                    this.#registeredRouteScannedId.forEach((id) => this.router.deleteRoute(id));
+                }
+                let routes = await ScanRouteDirectoryToRouter(this);
+                let middlewares = await ScanMiddlewareDirectory(this);
+                this._server = server;
+                this._express = app;
+                if (is_object(routes)) {
+                    this.#registeredRouteScannedId = routes;
+                }
+                if (is_array(this.#registeredMiddlewareScannedId)) {
+                    for (let id of this.#registeredMiddlewareScannedId) {
+                        this._middlewares = this._middlewares.filter((middleware) => middleware.id !== id);
+                    }
+                }
+                if (is_object(middlewares)) {
+                    this.#registeredMiddlewareScannedId = middlewares;
+                }
+                // sort middlewares by lowest priority number
+                this._middlewares = this._middlewares.sort((a, b) => {
+                    let aPriority = a.priority;
+                    let bPriority = b.priority;
+                    if (aPriority === bPriority) {
+                        return 0;
+                    }
+                    return aPriority > bPriority ? 1 : -1;
+                });
+                this.middlewares.forEach((middleware) => {
+                    if (!(middleware instanceof Middleware) || !is_function(middleware.dispatch)) {
                         return;
                     }
-
-                    if (port === 443 || port === 80) {
-                        info(
-                            'server',
-                            sprintf(
-                                __('Server started on %s://%s (%s)'),
-                                this.is_ssl ? 'https' : 'http',
-                                this.hostname,
-                                this.mode
-                            )
-                        );
-                    } else {
-                        info(
-                            'server',
-                            sprintf(
-                                __('Server started on %s://%s:%d (%s)'),
-                                this.is_ssl ? 'https' : 'http',
-                                this.hostname,
-                                port,
-                                this.mode
-                            )
-                        );
-                    }
-
-                    if (is_array(this.#registeredRouteScannedId)) {
-                        this.#registeredRouteScannedId.forEach((id) => this.router.deleteRoute(id));
-                    }
-                    let routes = await ScanRouteDirectoryToRouter(this);
-                    let middlewares = await ScanMiddlewareDirectory(this);
-                    this._server = server;
-                    this._express = app;
-                    if (is_object(routes)) {
-                        this.#registeredRouteScannedId = routes;
-                    }
-                    if (is_array(this.#registeredMiddlewareScannedId)) {
-                        for (let id of this.#registeredMiddlewareScannedId) {
-                            this._middlewares = this._middlewares.filter((middleware) => middleware.id !== id);
-                        }
-                    }
-                    if (is_object(middlewares)) {
-                        this.#registeredMiddlewareScannedId = middlewares;
-                    }
-                    // sort middlewares by lowest priority number
-                    this._middlewares = this._middlewares.sort((a, b) => {
-                        let aPriority = a.priority;
-                        let bPriority = b.priority;
-                        if (aPriority === bPriority) {
-                            return 0;
-                        }
-                        return aPriority > bPriority ? 1 : -1;
-                    });
-                    this.middlewares.forEach((middleware) => {
-                        if (!(middleware instanceof Middleware) || !is_function(middleware.dispatch)) {
-                            return;
-                        }
-                        app.use(middleware.dispatch.bind(middleware));
-                    });
-                    this.router.apply(this);
-                    app.use(MiddlewareNotfoundHandler.dispatch);
-                    app.use(MiddlewareErrorHandler.dispatch);
-                    app.use(MiddlewareGlobalErrorHandler.dispatch);
-                    // app['application'] = this;
-                    Object.defineProperty(app, 'application', {
-                        value: this,
-                        writable: false
-                    });
-                    resolve(this);
-                })
-                .setTimeout(this.timeout)
-                .on('error', (err) => {
-                    error('server', err);
+                    app.use(middleware.dispatch.bind(middleware));
                 });
+                this.router.apply(this);
+                app.use(MiddlewareNotfoundHandler.dispatch);
+                app.use(MiddlewareErrorHandler.dispatch);
+                app.use(MiddlewareGlobalErrorHandler.dispatch);
+                // app['application'] = this;
+                Object.defineProperty(app, 'application', {
+                    value: this,
+                    writable: false
+                });
+                resolve(this);
+            }
+            listen(port, this.hostname)
+                .then(listener)
+                .catch((err) => {
+                    if (OriginHostname !== this.hostname && CurrentOriginPort) {
+                        info('server', sprintf(
+                                __('Trying to listen on origin hostname: %s'),
+                                OriginHostname
+                            )
+                        );
+                        listen(CurrentOriginPort, OriginHostname)
+                            .then((server) => {
+                                this._hostname = OriginHostname;
+                                listener(server);
+                            })
+                            .catch((err) => {
+                                error('server', err);
+                                reject(err);
+                            });
+                        return;
+                    }
+                    error('server', err);
+                    reject(err);
+                });
+
         });
     }
 }
