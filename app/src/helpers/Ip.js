@@ -69,7 +69,7 @@ export const IPv6_RESERVED_RANGES = [
 /**
  * Check if an IP is a bogon IP
  *
- * @param ip
+ * @param {string} ip
  * @return {boolean}
  */
 export const is_bogon_ip = (ip) => {
@@ -124,7 +124,7 @@ export const filter_ipv4 = (ip) => {
  * Filter IPv6 address
  *
  * @param {string} ip
- * @return {*|boolean}
+ * @return {string|false}
  */
 export const filter_ipv6 = (ip) => {
     if (typeof ip !== 'string' || !ip.includes(':') || ip.includes('.')) {
@@ -174,7 +174,7 @@ export const ip_version = (ip) => {
  * Convert IP to long
  *
  * @param {string} ip
- * @return {number|BigInt|boolean}
+ * @return {number|BigInt|false}
  */
 export const ip2long = (ip) => {
     const version = ip_version(ip);
@@ -204,8 +204,8 @@ export const ip2long = (ip) => {
 /**
  * Convert long to IP
  *
- * @param {number} long
- * @return {string|boolean}
+ * @param {number|BigInt} long
+ * @return {string|false}
  */
 export const long2ip = (long) => {
     // 2^128 = 340282366920938463463374607431768211455
