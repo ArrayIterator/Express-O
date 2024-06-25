@@ -75,7 +75,7 @@ export const is_array = (param) => Array.isArray(param);
  * Check if a variable is a string
  *
  * @param {any} param
- * @return {param is string|param is String}
+ * @return {param is string}
  */
 export const is_string = (param) => typeof param === "string" || param instanceof String;
 
@@ -146,7 +146,7 @@ export const is_scalar = (param) => is_string(param) || is_number(param) || is_b
  * Check if a variable is an object
  *
  * @param {any} param
- * @return {param is object & param is !Array<any> & param is !null & param is !undefined}
+ * @return {param is Object & param is !Array<any> & param is !null & param is !undefined}
  */
 export const is_object = (param) => param && typeof param === "object" && !is_array(param);
 
@@ -154,15 +154,15 @@ export const is_object = (param) => param && typeof param === "object" && !is_ar
  * Check if a variable is a function
  *
  * @param {any} param
- * @return {param is function}
+ * @return {param is (...arg?:any) => any}
  */
-export const is_function = (param) => typeof param === "function";
+export const is_function = (param) => param && typeof param === "function";
 
 /**
- * Check if a variable is a async function
+ * Check if a variable is an async function
  *
  * @param {any} param
- * @return {param is function}
+ * @return {param is (...arg?:any) => Promise<any>}
  */
 export const is_async_function = (param) => is_function(param) && param.constructor.name === "AsyncFunction";
 
@@ -194,7 +194,7 @@ export const is_undefined = (param) => param === undefined;
  * Check if a variable is a symbol
  *
  * @param {any} param
- * @return {param is symbol}
+ * @return {param is Symbol}
  */
 export const is_symbol = (param) => typeof param === "symbol";
 
@@ -202,7 +202,7 @@ export const is_symbol = (param) => typeof param === "symbol";
  * Check if a variable is a promise
  *
  * @param {any} param
- * @return {param is Promise<any>}
+ * @return {param is Promise}
  */
 export const is_promise = (param) => param instanceof Promise;
 
@@ -242,6 +242,6 @@ export const is_iterable = (param) => is_array(param) || is_object(param) && is_
  * Check if a variable is a buffer
  *
  * @param param
- * @return {param is undefined|param is null|param is string|param is number|param is boolean|param is symbol|param is function|param is object}
+ * @return {param is undefined|param is null|param is string|param is number|param is boolean|param is Symbol|param is Function|param is Object}
  */
 export const is_empty = (param) => !!((!param && param !== '0') || is_null(param) || is_undefined(param) || is_array(param) && param.length === 0 || is_object(param) && Object.keys(param).length === 0);
