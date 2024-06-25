@@ -1,0 +1,15 @@
+/**
+ * Seeder
+ *
+ * @param { import("knex").Knex } knex
+ * @return { Promise<void> }
+ */
+export const seed = async function(knex) {
+  // Deletes ALL existing entries
+  await knex('table_name').del()
+  await knex('table_name').insert([
+    {id: 1, colName: 'your value 1'},
+    {id: 2, colName: 'your value 2'},
+    {id: 3, colName: 'your value 3'}
+  ]);
+};
