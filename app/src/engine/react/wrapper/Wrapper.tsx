@@ -1,7 +1,9 @@
-import {ReactNode} from "react";
+import {Fragment, ReactNode, isValidElement} from "react";
 import HTMLReactParser from 'html-react-parser';
 import {is_array, is_object, is_string} from "../../../helpers/Is.js";
+import {strval} from "../../../helpers/DataType.js";
 
+// noinspection JSUnusedGlobalSymbols
 export default function Wrapper(
     {
         children,
@@ -39,22 +41,32 @@ export default function Wrapper(
     rootId = !rootId || !is_string(rootId) ? 'root' : rootId;
     rootId = rootId.trim().replace(/[^a-zA-Z0-9-_]/g, '');
     rootId = rootId.length === 0 ? 'root' : rootId;
-    if (typeof header === 'string') {
-        header = HTMLReactParser(header);
-    }
-    if (typeof children === 'string') {
-        children = HTMLReactParser(children);
-    }
-    if (is_array(header)) {
-        header = (
-            <>{header}</>
+    const createFragment = (children: ReactNode[]|any[]|string|ReactNode) => {
+        if (is_string(children)) {
+            return HTMLReactParser(children);
+        }
+        if (!is_array(children)) {
+            if (is_object(children) && isValidElement(children)) {
+                return children;
+            }
+            return strval(children);
+        }
+        return (
+            <>{children.map((child, index) => {
+                return (
+                    <Fragment key={index}>{
+                        is_string(child) ? HTMLReactParser(child) : (
+                            is_array(child) ? createFragment(child) : (
+                                isValidElement(child) ? child : strval(child)
+                            )
+                        )
+                    }</Fragment>
+                );
+            })}</>
         );
     }
-    if (is_array(children)) {
-        children = (
-            <>{children}</>
-        );
-    }
+    children = createFragment(children);
+    header = createFragment(header);
     return (
         <html {...htmlAttributes}>
         <head>
