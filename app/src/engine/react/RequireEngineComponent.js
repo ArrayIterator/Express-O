@@ -9,6 +9,8 @@ import {E_ERROR} from "../../errors/exceptions/ErrorCode.js";
 import {dirname} from "path";
 import {transformSync} from "@babel/core";
 import HTMLReactParser from "html-react-parser";
+import {Fragment, createElement, isValidElement} from "react";
+import {is_async_function, is_function, is_string, is_undefined} from "../../helpers/Is.js";
 
 /**
  * Compiled Scripts Directory
@@ -53,6 +55,65 @@ export const GenerateScriptCacheFileName = (fileName) => {
         ext,
         name + '-' + md5(fileName) + COMPILATION_EXTENSION
     );
+}
+
+/**
+ * List Handlers
+ *
+ * @type {{[ext: string]: (fileName: string) => any}}
+ */
+const RequireHandler= {};
+
+// noinspection JSUnusedGlobalSymbols
+/**
+ * Require Add Extension Handler
+ *
+ * @param {string} ext
+ * @param {(fileName: string) => any} handler
+ */
+export const AddExtensionHandler = (ext, handler) => {
+    if (!is_string(ext) || !is_function(ext)) {
+        return;
+    }
+    ext = ext.toLowerCase().trim();
+    if (!ext.startsWith('.')) {
+        ext = '.' + ext;
+    }
+    RequireHandler[ext] = handler;
+}
+
+/**
+ * Require Remove Extension Handler
+ *
+ * @param {string} ext
+ */
+export const RemoveExtensionHandler = (ext) => {
+    if (!is_string(ext)) {
+        return;
+    }
+    ext = ext.toLowerCase().trim();
+    if (!ext.startsWith('.')) {
+        ext = '.' + ext;
+    }
+    delete RequireHandler[ext];
+}
+
+// noinspection JSUnusedGlobalSymbols
+/**
+ * Get Handler
+ *
+ * @param ext
+ * @return {(fileName: string) => any|undefined}
+ */
+export const GetHandler = (ext) => {
+    if (!is_string(ext)) {
+        return;
+    }
+    ext = ext.toLowerCase().trim();
+    if (!ext.startsWith('.')) {
+        ext = '.' + ext;
+    }
+    return RequireHandler[ext]||undefined;
 }
 
 /**
@@ -122,6 +183,9 @@ export const CompileTsFile = (fileName) => {
                     comments = comments[1];
                     try {
                         compiledCode = compiledCode.substring(comments.length);
+                        /**
+                         * @type {{source_file: string, compiled_date: string, source_hash: string, compiled_hash: string}}
+                         */
                         comments = JSON.parse(comments);
                         if (comments.source_file === fileName
                             && comments.source_hash === sourceHash
@@ -276,7 +340,55 @@ export const RequireEngineComponent = (fileName) => {
                 FunctionCaches[CacheFile] = (function () {
                     return HTMLReactParser(readFileSync(fileName, 'utf-8'));
                 });
+            } else {
+                // handle if any handler
+                const ext = extname(baseNameLower);
+                let handler = RequireHandler[ext];
+                if (handler && !is_function(handler)) {
+                    RemoveExtensionHandler(ext);
+                    handler = undefined;
+                }
+                let content = undefined;
+                if (handler && is_function(handler) && handler !== RequireEngineComponent) {
+                    try {
+                        content = handler(fileName);
+                        if (is_async_function(content)) {
+                            content = await content().catch(() => undefined);
+                        }
+                        if (content && isValidElement(content)) {
+                            FunctionCaches[CacheFile] = (function () {
+                                return content;
+                            });
+                            resolve(FunctionCaches[CacheFile]);
+                            return FunctionCaches[CacheFile];
+                        }
+                        if (!is_undefined(content) && is_string(content)) {
+                            FunctionCaches[CacheFile] = (function () {
+                                if (content.match(/<([^>]+)>.*<\/\1>/)) {
+                                    try {
+                                        content = HTMLReactParser(content);
+                                    } catch (err) {
+                                        content = createElement(Fragment, {}, content);
+                                    }
+                                } else {
+                                    content = createElement(Fragment, {}, content);
+                                }
+                                return content;
+                            });
+                            resolve(FunctionCaches[CacheFile]);
+                            return FunctionCaches[CacheFile];
+                        }
+                    } catch (e) {
+                        // ignore
+                    }
+                }
+                content = undefined;
+                // create react component with plaintext content
+                FunctionCaches[CacheFile] = (function () {
+                    return createElement(Fragment, {}, readFileSync(fileName, 'utf-8'));
+                });
             }
+
             resolve(FunctionCaches[CacheFile]);
             return FunctionCaches[CacheFile];
         }
