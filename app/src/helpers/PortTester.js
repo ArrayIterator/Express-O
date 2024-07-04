@@ -1,6 +1,6 @@
 import net from "net";
 import {is_integer, is_string} from "./Is.js";
-import {BLACKLIST_PORT} from "./Constant.js";
+import {BLACKLIST_PORT} from "./Constants.js";
 import InvalidArgumentException from "../errors/exceptions/InvalidArgumentException.js";
 import RuntimeException from "../errors/exceptions/RuntimeException.js";
 import {E_NOTICE} from "../errors/exceptions/ErrorCode.js";

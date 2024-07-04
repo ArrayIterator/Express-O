@@ -27,7 +27,7 @@ import Router from "../router/Router.js";
 import {sprintf} from "../helpers/Formatting.js";
 import OutOfRangeException from "../errors/exceptions/OutOfRangeException.js";
 import InvalidArgumentException from "../errors/exceptions/InvalidArgumentException.js";
-import {BLACKLIST_PORT, PORT_RANGE_END, PORT_RANGE_START, TIMEOUT} from "../helpers/Constant.js";
+import {BLACKLIST_PORT, PORT_RANGE_END, PORT_RANGE_START, TIMEOUT} from "../helpers/Constants.js";
 import {intval} from "../helpers/DataType.js";
 import RuntimeException from "../errors/exceptions/RuntimeException.js";
 import PortTester from "../helpers/PortTester.js";
