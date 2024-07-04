@@ -20,6 +20,7 @@ export const is_numeric_integer = (param) => is_numeric(param) && Number.isInteg
 
 /**
  * Check if a variable is a nan
+ *
  * @param {any} param
  * @return {param is number & param is NaN}
  */
@@ -154,7 +155,7 @@ export const is_object = (param) => param && typeof param === "object" && !is_ar
  * Check if a variable is a function
  *
  * @param {any} param
- * @return {param is (...arg?:any) => any}
+ * @return {param is ((...arg?:any) => any) | param is Function}
  */
 export const is_function = (param) => param && typeof param === "function";
 
