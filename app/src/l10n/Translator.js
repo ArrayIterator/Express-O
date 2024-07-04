@@ -68,6 +68,13 @@ export const set_language_translation = (language) => {
 }
 
 /**
+ * Exclude languages, exclude en & en-US by default
+ *
+ * @type {string[]}
+ */
+export const EXCLUDE_LANGUAGES = ['en', 'en-US'];
+
+/**
  * Load domain language
  *
  * @param {string} domain
@@ -90,6 +97,11 @@ export const load_domain_translation = (domain, directory) => {
             return false;
         }
         const locale = NormalizeLocale(basename(directory, ext));
+        if (!locale || locale.length < 2
+            || EXCLUDE_LANGUAGES.includes(locale) // exclude languages
+        ) {
+            return false;
+        }
         if (!DOMAIN_LISTS[domain]) {
             DOMAIN_LISTS[domain] = {};
         }

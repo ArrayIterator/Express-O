@@ -48,9 +48,9 @@ import Config, {
     ENVIRONMENT_MODE,
     ENVIRONMENT_MODES,
     MIGRATIONS_DIR,
-    PRODUCTION_NAME_ENV,
+    PRODUCTION_NAME_MODE,
     SEEDERS_DIR,
-    TEST_NAME_ENV
+    TEST_NAME_MODE
 } from "../app/Config.js";
 import {resolve as resolvePath} from "node:path";
 import RuntimeException from "../errors/exceptions/RuntimeException.js";
@@ -214,7 +214,7 @@ export const ParseDSN = (dsn) => {
         migration_table: /(?:^|\s*;)\s*(?:db|database)?migration_*table\s*=\s*(['"]?)(?<value>[^\1;]*)\1\s*(;|$)/i,
     }
     const result = {
-        debug: ENVIRONMENT_MODE === TEST_NAME_ENV,
+        debug: ENVIRONMENT_MODE === TEST_NAME_MODE,
         nullable: true,
         driver: driver,
         user: null,
@@ -418,7 +418,7 @@ export const NormalizeConfiguration = (config) => {
     );
     const debug = is_boolean(config.debug) ? config.debug : (
         is_boolean(config.dbdebug) ? config.dbdebug : (
-            ENVIRONMENT_MODE === TEST_NAME_ENV
+            ENVIRONMENT_MODE === TEST_NAME_MODE
         )
     );
     let environment = is_string(config.environment) ? config.environment.trim().toLowerCase() : (
@@ -590,7 +590,7 @@ export const CreateKnexConfig = (config) => {
     if (is_boolean(config.debug)) {
         connection.debug = config.debug;
     } else {
-        connection.debug = ENVIRONMENT_MODE !== PRODUCTION_NAME_ENV;
+        connection.debug = ENVIRONMENT_MODE !== PRODUCTION_NAME_MODE;
     }
     if (is_numeric_integer(config.pool)) {
         connection.pool = {
