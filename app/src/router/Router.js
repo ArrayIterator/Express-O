@@ -17,7 +17,6 @@ import {__} from "../l10n/Translator.js";
 import Controller from "../abstracts/Controller.js";
 import {Application} from "../app/Application.js";
 
-
 /**
  * Router
  */
@@ -40,7 +39,7 @@ export default class Router {
     }
 
     /**
-     * Determine id
+     * Determine id of the route
      *
      * @param {Route|number|string} idOrRoute Route instance or id
      * @return {?number} Route id
