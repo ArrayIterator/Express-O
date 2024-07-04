@@ -11,14 +11,17 @@ mode: development
 # timezone - UTC, Asia/Tokyo, etc
 timezone: UTC
 # language - en, ja, etc
+# it can be overridden by environment variable of --lang|LANG=LANG_CODE
 language: en
 # timeout response in milliseconds
+# it can be overridden by environment variable of --timeout|TIMEOUT=TIMEOUT_IN_MILLISECONDS
 timeout: 5000
 # server port
 port: 3030
 # server public accessible or not
 public: true
 # listen ip, if set to public it will always 0.0.0.0
+# it can be overridden by environment variable of --ip|IP=IP.ADDRESS
 ip: 127.0.0.1
 # x-powered-by header, false or empty to disable, string as custom value
 x_powered_by: false
@@ -26,9 +29,15 @@ x_powered_by: false
 pretty_json: true
 # ssl configuration
 ssl:
-  enable: true # enable ssl (true or false)
-  key: '' # path to ssl key
-  cert: '' # path to ssl cert
+  # enable ssl (true or false)
+  # automatically set to true if key and cert is set in environment --ssl-key|SSL_KEY=SSL_KEY_PATH --ssl-cert|SSL_CERT=SSL_CERT_PATH
+  enable: true
+  # path to ssl key
+  # it can be overridden by environment variable of --ssl-key|SSL_KEY=SSL_KEY_PATH
+  key: ''
+  # path to ssl cert
+  # it can be overridden by environment variable of --ssl-cert|SSL_CERT=SSL_CERT_PATH
+  cert: ''
 # directory path
 directory:
   storage: '%root_dir%/storage'

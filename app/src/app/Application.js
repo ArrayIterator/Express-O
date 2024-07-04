@@ -40,7 +40,7 @@ import Config, {
     ENVIRONMENT_MODE,
     VIEWS_DIR,
     CONTROLLERS_DIR,
-    MIDDLEWARES_DIR, ENVIRONMENT_MODES
+    MIDDLEWARES_DIR, ENVIRONMENT_MODES, NODE_IP
 } from "./Config.js";
 import MiddlewareErrorHandler from "./middlewares/MiddlewareErrorHandler.js";
 import MiddlewareGlobalErrorHandler from "./middlewares/MiddlewareGlobalErrorHandler.js";
@@ -546,7 +546,7 @@ export class Application {
      * @return {boolean}
      */
     get is_ssl() {
-        return this._is_ssl && !!this.sslKey && !!this.sslCert;
+        return this._is_ssl && !!this.sslKey && !!this.sslCert && this._serverPort !== 80;
     }
 
     /**
@@ -880,8 +880,8 @@ export class Application {
              * Set hostname to ip if not public
              * Check using ip
              */
-            if (!this.is_public) { // public will always 0.0.0.0
-                let ip = Config.get('environment.ip');
+            let ip = Config.get('environment.ip');
+            if (!this.is_public || NODE_IP === ip) { // public will always 0.0.0.0, exclude NODE_IP is determine
                 const version_ip = ip_version(ip);
                 if (version_ip) {
                     ip = version_ip === 4 ? filter_ipv4(ip) : filter_ipv4(ip);
@@ -892,7 +892,7 @@ export class Application {
                 }
             }
 
-            this._is_ssl = port === 443 || this.is_ssl;
+            this._is_ssl = port === 443 || this.is_ssl && port !== 80;
             const originPort = port;
             if (!port) {
                 debug('server', __('No port set, finding available ports.'));

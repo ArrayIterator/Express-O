@@ -16,29 +16,31 @@ import {
     is_scalar,
     is_string
 } from "../helpers/Is.js";
-const processENV = strval(process.env.ENV).toLowerCase().trim();
-let env = processENV;
-for (let index in process.argv) {
-    if (process.argv[index].startsWith('--env')) {
-        index = intval(index);
-        const val = strval(process.argv[index]).trim();
-        env = '';
-        if (val.startsWith('--env=')) {
-            env = val.substring(6).trim();
-        }
-        if (env === '' || index < process.argv.length - 1) {
-            env = strval(process.argv[index + 1]).trim();
-        }
-        env = env.toLowerCase().trim();
-        env = env === '' ? processENV : env;
-        break;
-    }
-}
+import {ip_version, is_bogon_ip, is_broadcast_ip} from "../helpers/Ip.js";
+import {createSecureContext} from "node:tls";
 
-export const NODE_ENV = env;
-export const NODE_PORT = intval(process.env.PORT);
-export const NODE_TIMEOUT = intval(process.env.TIMEOUT);
-export const NODE_LANGUAGE = strval(process.env.LANGUAGE).trim();
+const getEnvOf = (key) => {
+    const processENV = strval(process.env[key]).toLowerCase().trim();
+    key = key.toLowerCase().replace('_', '-');
+    let env = processENV;
+    for (let index in process.argv) {
+        if (process.argv[index].startsWith(`--${key}`)) {
+            index = intval(index);
+            const val = strval(process.argv[index]).trim();
+            env = '';
+            if (val.startsWith(`--${key}=`)) {
+                env = val.substring(key.length + 3).trim();
+            }
+            if (env === '' || index < process.argv.length - 1) {
+                env = strval(process.argv[index + 1]).trim();
+            }
+            env = env.trim();
+            env = env === '' ? processENV : env;
+            break;
+        }
+    }
+    return env;
+}
 
 /**
  * Resolve path
@@ -59,10 +61,10 @@ const resolvePath = (source, _path = '') => {
     return path.resolve(source, _path);
 }
 
-export const PRODUCTION_NAME_ENV = 'production';
-export const DEVELOPMENT_NAME_ENV = 'development';
-export const TEST_NAME_ENV = 'test';
-export const ENVIRONMENT_MODES = [PRODUCTION_NAME_ENV, DEVELOPMENT_NAME_ENV, TEST_NAME_ENV];
+export const PRODUCTION_NAME_MODE = 'production';
+export const DEVELOPMENT_NAME_MODE = 'development';
+export const TEST_NAME_MODE = 'test';
+export const ENVIRONMENT_MODES = [PRODUCTION_NAME_MODE, DEVELOPMENT_NAME_MODE, TEST_NAME_MODE];
 export const SRC_DIR = resolvePath(import.meta.dirname, '../');
 export const APP_DIR = resolvePath(SRC_DIR, '../');
 export const ROOT_DIR = resolvePath(APP_DIR, '../');
@@ -76,6 +78,76 @@ export const MODELS_DIR = resolvePath(APP_DIR, 'models');
 export const MIGRATIONS_DIR = resolvePath(APP_DIR, 'migrations');
 export const ENTITIES_DIR = resolvePath(APP_DIR, 'entities');
 export const SEEDERS_DIR = resolvePath(APP_DIR, 'seeders');
+
+/**
+ * Environment References
+ *
+ * @type {string}
+ */
+export const NODE_MODE = getEnvOf('MODE');
+/**
+ * Port References
+ *
+ * @type {string}
+ */
+export const NODE_PORT = getEnvOf('PORT');
+/**
+ * Timeout References
+ *
+ * @type {number}
+ */
+export const NODE_TIMEOUT = intval(getEnvOf('TIMEOUT'));
+/**
+ * Language References
+ *
+ * @type {string}
+ */
+export const NODE_LANGUAGE = getEnvOf('LANG');
+/**
+ * IP References
+ *
+ * @type {string}
+ */
+export const NODE_IP = getEnvOf('IP');
+/**
+ * SSL key References
+ *
+ * @type {string}
+ */
+let ssl_key = getEnvOf('SSL_KEY');
+if (ssl_key) {
+    ssl_key = resolvePath(process.cwd(), ssl_key);
+}
+/**
+ * SSL key References
+ *
+ * @type {string}
+ */
+export const NODE_SSL_KEY = ssl_key;
+let ssl_cert = getEnvOf('SSL_CERT');
+if (ssl_cert) {
+    ssl_cert = resolvePath(process.cwd(), ssl_cert);
+}
+/**
+ * SSL cert References
+ *
+ * @type {string}
+ */
+export const NODE_SSL_CERT = ssl_cert;
+
+/**
+ * SSL enable References
+ *
+ * @type {"true"|"false"}
+ */
+let enable_ssl = getEnvOf('SSL_ENABLE').trim().toLowerCase();
+    enable_ssl = enable_ssl === '1' ? 'true' : (enable_ssl === '0' ? 'false' : enable_ssl);
+/**
+ * SSL enable References
+ *
+ * @type {string}
+ */
+export const NODE_SSL_ENABLE = enable_ssl;
 
 /**
  * Directories
@@ -166,7 +238,7 @@ const replacePlaceHolder = (str) => {
 
 const CONFIGS = {
     environment: {
-        mode: PRODUCTION_NAME_ENV,
+        mode: PRODUCTION_NAME_MODE,
         timezone: 'UTC',
         timeout: 30000,
         public: false,
@@ -238,7 +310,7 @@ if (existsSync(resolvePath(CONFIGS_DIR, 'environment.yaml'))) {
         let env = replacePlaceHolder(readFileSync(resolvePath(CONFIGS_DIR, 'environment.yaml')));
         env = parse(env);
         if (is_object(env)) {
-            ['mode', 'timezone', 'language'].forEach(key => {
+            ['mode', 'timezone', 'language', 'ip'].forEach(key => {
                 CONFIGS.environment[key] = is_string(env[key]) ? env[key] : CONFIGS_DIR[key];
                 delete env[key];
             });
@@ -284,13 +356,15 @@ if (existsSync(resolvePath(CONFIGS_DIR, 'environment.yaml'))) {
         // pass
     }
 }
-
-if (NODE_ENV !== '') {
-    CONFIGS.environment.mode = NODE_ENV.includes('prod') ? PRODUCTION_NAME_ENV : (
-        NODE_ENV.includes('dev') ? DEVELOPMENT_NAME_ENV : (
-            NODE_ENV.includes('tes') ? TEST_NAME_ENV : CONFIGS.environment.mode
+if (NODE_MODE !== '') {
+    CONFIGS.environment.mode = NODE_MODE.includes('prod') ? PRODUCTION_NAME_MODE : (
+        NODE_MODE.includes('dev') ? DEVELOPMENT_NAME_MODE : (
+            NODE_MODE.includes('tes') ? TEST_NAME_MODE : CONFIGS.environment.mode
         )
     );
+}
+if (ip_version(NODE_IP) && !is_broadcast_ip(NODE_IP) && is_bogon_ip(NODE_IP)) {
+    CONFIGS.environment.ip = NODE_IP;
 }
 if (NODE_PORT > 0 && NODE_PORT < 65536) {
     CONFIGS.environment.port = NODE_PORT;
@@ -302,16 +376,57 @@ if (NODE_LANGUAGE !== '' && NODE_LANGUAGE.length === 2) {
     CONFIGS.environment.language = NODE_LANGUAGE.toLowerCase();
 }
 if (!CONFIGS.environment.mode) {
-    CONFIGS.environment.mode = PRODUCTION_NAME_ENV;
+    CONFIGS.environment.mode = PRODUCTION_NAME_MODE;
 } else {
     // only accept test/production/development
     let env_ = CONFIGS.environment.mode.trim().toLowerCase();
-    CONFIGS.environment.mode = env_.includes('prod') ? PRODUCTION_NAME_ENV : (
-        env_.includes('dev') ? DEVELOPMENT_NAME_ENV : (
-            env_.includes('tes') ? TEST_NAME_ENV : PRODUCTION_NAME_ENV
+    CONFIGS.environment.mode = env_.includes('prod') ? PRODUCTION_NAME_MODE : (
+        env_.includes('dev') ? DEVELOPMENT_NAME_MODE : (
+            env_.includes('tes') ? TEST_NAME_MODE : PRODUCTION_NAME_MODE
         )
     );
 }
+if (NODE_SSL_ENABLE === 'false') {
+    CONFIGS.environment.ssl.enable = false;
+} else if (NODE_SSL_ENABLE === 'true') {
+    CONFIGS.environment.ssl.enable = true;
+}
+
+/**
+ * SSL REFERENCES
+ * if ssl key & ssl certificate is provided will enable buy default,
+ * and it should not port 80
+ */
+if (intval(CONFIGS.environment.port) !== 80
+    && NODE_SSL_CERT !== ''
+    && NODE_SSL_KEY !== ''
+    && existsSync(NODE_SSL_CERT)
+    && existsSync(NODE_SSL_KEY)
+) {
+    // tes cert
+    try {
+        // check if cert valid ssl cert
+        createSecureContext({
+            key: readFileSync(NODE_SSL_KEY, 'utf8'),
+            cert: readFileSync(NODE_SSL_CERT, 'utf8')
+        });
+        if (!is_object(CONFIGS.environment.ssl)) {
+            CONFIGS.environment.ssl = {};
+        }
+        if (NODE_SSL_ENABLE === 'false') {
+            CONFIGS.environment.ssl.enable = false;
+        } else if (NODE_SSL_ENABLE === 'true') {
+            CONFIGS.environment.ssl.enable = true;
+        } else {
+            CONFIGS.environment.ssl.enable = true;
+        }
+        CONFIGS.environment.ssl.key = NODE_SSL_KEY;
+        CONFIGS.environment.ssl.cert = NODE_SSL_CERT;
+    } catch (e) {
+        // use default
+    }
+}
+
 DIRS.storage = CONFIGS.environment.directory.storage;
 DIRS.public = CONFIGS.environment.directory.public;
 
@@ -436,7 +551,7 @@ export class Configuration {
      * @return {boolean}
      */
     get is_development() {
-        return this.environment_mode === DEVELOPMENT_NAME_ENV;
+        return this.environment_mode === DEVELOPMENT_NAME_MODE;
     }
 
     /**
@@ -445,7 +560,7 @@ export class Configuration {
      * @return {boolean}
      */
     get is_test() {
-        return this.environment_mode === TEST_NAME_ENV;
+        return this.environment_mode === TEST_NAME_MODE;
     }
 
     /**

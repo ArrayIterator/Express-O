@@ -8,9 +8,9 @@ The application running 1 instance, and only accepted 1 environment mode variabl
 
 Environment mode can be override by node arguments or environment :
 
-- ```ENV=production|development|test node app.js```
-- ```node app.js ---env=production|development|test```
-- ```node app.js ---env production|development|test```
+- ```MODE=production|development|test node app.js```
+- ```node app.js ---mode=production|development|test```
+- ```node app.js ---mode production|development|test```
 
 Without environment mode variable, the application will running as default `mode` on **_[environment config](app/configs/environment.example.yaml)_**.
 
@@ -21,13 +21,13 @@ Running `watch.js` also affected by the environment mode.
 Match include `dev` will also resolve as `development`
 
 ```bash
-ENV=development node app.js
+MODE=development node app.js
 ```
 
 **OR**
 
 ```bash
-node app.js --env development
+node app.js --mode development
 ```
 
 ### Production mode
@@ -35,13 +35,13 @@ node app.js --env development
 Match include `prod` will also resolve as `production`
 
 ```bash
-ENV=production node app.js
+MODE=production node app.js
 ```
 
 **OR**
 
 ```bash
-node app.js --env production
+node app.js --mode production
 ```
 
 ### Test mode
@@ -49,13 +49,13 @@ node app.js --env production
 Match include `tes` will also resolve as `test`
 
 ```bash
-ENV=test node app.js
+MODE=test node app.js
 ```
 
 **OR**
 
 ```bash
-node app.js --env test
+node app.js --mode test
 ```
 
 The priority match is `prod` > `dev` > `tes`
@@ -73,6 +73,23 @@ npm run watch
 ```bash
 node watch.js
 ```
+
+### AVAILABLE OVERRIDE ENVIRONMENT
+
+1. `--port` / `PORT=xxxx` - Override port ( 0- 65535 )
+2. `--ip` / `IP=xxxx` - Override host / ip binding (eg: 127.0.0.1)
+3. `--mode` / `MODE=xxxx` - Override environment mode
+4. `--timeout` / `TIMEOUT=xxxx` - Override timeout in milliseconds
+5. `--lang` / `LANG=xx` - Override language 2 characters code
+6. `--ssl-key` / `SSL_KEY=/path/to/key` - Override SSL Key file path
+7. `--ssl-cert` / `SSL_CERT=/path/to/cert` - Override SSL Cert file path
+8. `--ssl-enable` / `SSL_ENABLE=true|false` - Enable SSL
+
+ - The IP will override of `public` config if IP is valid bogon ip.
+ - When the SSL key & cert is valid, it will be used as SSL server certificate. The both key & cert must be valid file path.
+ - The `ssl-enable` to force enable / not if ssl key & cert valid on configuration or env.
+ - Language `en` is default language, if the language is not available, it will fall back to default language.
+
 
 ## DIRECTORY STRUCTURE
 
