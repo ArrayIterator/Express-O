@@ -146,7 +146,7 @@ export default class MemoryAdapter extends CacheItemPool {
             key = `${this.namespace}:${key}`;
             if (cacheItems.has(key)) {
                 let item = cacheItems.get(key);
-                if (item.expiration !== null && item !== 0 && item < Date.now() / 1000) {
+                if (item.expiration !== null && item.expiration !== 0 && item < Date.now() / 1000) {
                     cacheItems.delete(key);
                     item = new CacheItem(key, null, false, this.defaultLifetime, this.defaultLifetime);
                 } else {
