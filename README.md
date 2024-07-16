@@ -1,6 +1,6 @@
 # EXPRESS-O SERVE
  
-**Express-O SERVE** simple serving web application.
+**Express-O SERVE** simple serving web application. (internal team)
 
 ## ENVIRONMENT MODE
 
