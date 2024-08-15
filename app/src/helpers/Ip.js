@@ -96,6 +96,9 @@ export const is_broadcast_ip = (ip) => {
  * @return {string|false}
  */
 export const filter_ipv4 = (ip) => {
+    if (typeof ip !== 'string' || !ip.includes('.') || ip.includes(':')) {
+        return false;
+    }
     const split = ip.split('.');
     if (split.length !== 4) {
         return false;

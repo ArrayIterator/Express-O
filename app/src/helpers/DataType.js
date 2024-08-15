@@ -1,7 +1,7 @@
 // noinspection JSUnusedGlobalSymbols
 
 import Crypto from 'crypto';
-import {is_boolean, is_empty, is_infinite, is_nan, is_numeric, is_string} from "./Is.js";
+import {is_array, is_boolean, is_empty, is_infinite, is_nan, is_numeric, is_string} from "./Is.js";
 
 /**
  * Convert any to string
@@ -126,7 +126,18 @@ export const str_pad = (input, pad_length, pad_string = ' ', pad_type = 'STR_PAD
     }
     return input.padEnd(pad_length, pad_string);
 }
-
+export const substr = (input, start, length) => {
+    input = strval(input);
+    start = intval(start);
+    length = intval(length);
+    if (start < 0) {
+        start = input.length + start;
+    }
+    if (length < 0) {
+        length = input.length - start + length;
+    }
+    return input.substr(start, length);
+}
 /**
  * Binary to hex
  *
@@ -145,6 +156,55 @@ export const bin2hex = (param) => {
     } catch (err) {
         return '';
     }
+}
+
+/**
+ * Hex to string
+ *
+ * @param {string} hex_string
+ * @return {number}
+ */
+export const hexdec = (hex_string) => {
+    hex_string = strval(hex_string);
+    return parseInt(hex_string, 16);
+}
+
+export const dechex = (dec) => {
+    dec = intval(dec);
+    return dec.toString(16);
+}
+
+export const str_split = (input, split_length = 1) => {
+    input = strval(input);
+    split_length = intval(split_length);
+    if (split_length < 1) {
+        return [];
+    }
+    const result = [];
+    for (let i = 0; i < input.length; i += split_length) {
+        result.push(input.substring(i, split_length));
+    }
+    return result;
+}
+
+export const implode = (glue, pieces) => {
+    if (is_empty(pieces)) {
+        return '';
+    }
+    return pieces.join(glue);
+}
+
+export const str_replace = (search, replace, subject) => {
+    if (is_array(search)) {
+        for (let i = 0; i < search.length; i++) {
+            subject = str_replace(search[i], replace[i], subject);
+        }
+        return subject;
+    }
+    search = strval(search);
+    replace = strval(replace);
+    subject = strval(subject);
+    return subject.split(search).join(replace);
 }
 
 /**
@@ -249,6 +309,26 @@ export const random_int = (min, max) => {
         [min, max] = [max, min];
     }
     return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+export const random_float = (min, max) => {
+    min = intval(min);
+    max = intval(max);
+    if (min > max) {
+        [min, max] = [max, min];
+    }
+    return Math.random() * (max - min) + min;
+}
+export const random_string = (length, chars) => {
+    length = intval(length);
+    if (length <= 0) {
+        return '';
+    }
+    chars = chars || 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let str = '';
+    for (let i = 0; i < length; i++) {
+        str += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return str;
 }
 
 /**
